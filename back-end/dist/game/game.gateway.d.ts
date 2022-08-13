@@ -8,4 +8,5 @@ export declare class GameGateway {
     constructor(gameService: GameService);
     setInitPlayer(setPlayerDto: SetPlayerDto, client: Socket): Match | "first player";
     updateGame(id: number): Match;
+    updateplayers(match: Match): void;
 }

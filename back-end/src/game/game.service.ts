@@ -97,8 +97,8 @@ export class GameService {
         this.resetBall(id);
       }
       // the ball has a velocity
-      match.ball.x += match.ball.velocityX;
-      match.ball.y += match.ball.velocityY;
+      // match.ball.x += match.ball.velocityX;
+      // match.ball.y += match.ball.velocityY;
       // computer plays for itself, and we must be able to beat it
       // sample AI to control the com paddle
       match.playerTwo.y += (match.ball.y - (match.playerTwo.y + match.playerTwo.height / 2)) * 1;
@@ -127,4 +127,23 @@ export class GameService {
       return match;
     }
   }
+
+  updateMovement(movement: any) {
+    const match = this.matches.find(m => m.id === movement.id);
+    if (match.id === movement.id) {
+      match.playerOne.y += movement.y;
+      if (match.playerOne.y < 0) {
+        match.playerOne.y = 0;
+      }
+      else if (match.playerOne.y + match.playerOne.height > this.canvheight) {
+        match.playerOne.y = this.canvheight - match.playerOne.height;
+      }
+    }
+    return match;
+  }
 }
+// const match = this.matches.find(m => m.id === movement.id);
+//     if (match.id === movement.id) {
+//       match.playerOne = movement.playerOne;
+//       match.playerTwo = movement.playerTwo;
+//     }

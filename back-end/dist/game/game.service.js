@@ -95,8 +95,6 @@ let GameService = class GameService {
                 match.playerOne.score++;
                 this.resetBall(id);
             }
-            match.ball.x += match.ball.velocityX;
-            match.ball.y += match.ball.velocityY;
             match.playerTwo.y += (match.ball.y - (match.playerTwo.y + match.playerTwo.height / 2)) * 1;
             if (match.ball.y - match.ball.radius < 0 || match.ball.y + match.ball.radius > this.canvheight) {
                 match.ball.velocityY = -match.ball.velocityY;
@@ -113,6 +111,19 @@ let GameService = class GameService {
             }
             return match;
         }
+    }
+    updateMovement(movement) {
+        const match = this.matches.find(m => m.id === movement.id);
+        if (match.id === movement.id) {
+            match.playerOne.y += movement.y;
+            if (match.playerOne.y < 0) {
+                match.playerOne.y = 0;
+            }
+            else if (match.playerOne.y + match.playerOne.height > this.canvheight) {
+                match.playerOne.y = this.canvheight - match.playerOne.height;
+            }
+        }
+        return match;
     }
 };
 GameService = __decorate([

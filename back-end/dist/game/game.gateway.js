@@ -17,6 +17,7 @@ const websockets_1 = require("@nestjs/websockets");
 const game_service_1 = require("./game.service");
 const Socket_io_1 = require("Socket.io");
 const SetPlayer_dto_1 = require("./dto/SetPlayer.dto");
+const game_entity_1 = require("./entities/game.entity");
 let GameGateway = class GameGateway {
     constructor(gameService) {
         this.gameService = gameService;
@@ -34,6 +35,9 @@ let GameGateway = class GameGateway {
     }
     updateGame(id) {
         return this.gameService.update(id);
+    }
+    updateplayers(match) {
+        this.gameService.updateMovement(match);
     }
 };
 __decorate([
@@ -56,6 +60,13 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", void 0)
 ], GameGateway.prototype, "updateGame", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('updateplayers'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [game_entity_1.Match]),
+    __metadata("design:returntype", void 0)
+], GameGateway.prototype, "updateplayers", null);
 GameGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {

@@ -80,35 +80,35 @@ const Home: NextPage = () => {
   const [Umatch, setUmatch] = useState<{
     id: number;
     playerOne: {
-        socketId: string;
-        name: string;
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-        color: string;
-        score: number;
+      socketId: string;
+      name: string;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      color: string;
+      score: number;
     }
     playerTwo: {
-        socketId: string;
-        name: string;
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-        color: string;
-        score: number;
+      socketId: string;
+      name: string;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      color: string;
+      score: number;
     }
     ball: {
-        x: number;
-        y: number;
-        radius: number;
-        speed: number;
-        velocityX: number;
-        velocityY: number;
-        color: string
+      x: number;
+      y: number;
+      radius: number;
+      speed: number;
+      velocityX: number;
+      velocityY: number;
+      color: string
     }
-}>();
+  }>();
 
   useEffect(() => {
     socket.connect();
@@ -138,7 +138,7 @@ const Home: NextPage = () => {
   }, []);
 
   useEffect(() => {
-      // console.log('---Umatch:', Umatch);
+    // console.log('---Umatch:', Umatch);
   }, [Umatch]);
 
   const sendName = (e: any) => {
@@ -194,6 +194,7 @@ const Home: NextPage = () => {
   }
 
   useEffect(() => {
+    let inter: NodeJS.Timer | undefined;
     const interval = setInterval(() => {
       if (canvasRef.current) {
         const canvas: HTMLCanvasElement = canvasRef.current;
@@ -205,12 +206,12 @@ const Home: NextPage = () => {
         // //draw score
         // console.log(user);
         // drawText(ctx, user.score.toString(), canvWidth / 4, canvHeight / 5, "white");
-        
+
         if (Umatch?.playerOne || Umatch?.playerTwo) {
           drawText(ctx, Umatch.playerOne.score.toString(), canvWidth / 4, canvHeight / 5, "white");
           // drawText(ctx, com.score.toString(), 3 * canvWidth / 4, canvHeight / 5, "white");
           drawText(ctx, Umatch.playerTwo.score.toString(), 3 * canvWidth / 4, canvHeight / 5, "white");
-        // draw the user & computer paddle
+          // draw the user & computer paddle
 
           drawRect(ctx, Umatch.playerOne.x, Umatch.playerOne.y, Umatch.playerOne.width, Umatch.playerOne.height, Umatch.playerOne.color);
           drawRect(ctx, Umatch.playerTwo.x, Umatch.playerTwo.y, Umatch.playerTwo.width, Umatch.playerTwo.height, Umatch.playerTwo.color);
@@ -218,8 +219,7 @@ const Home: NextPage = () => {
           drawCircle(ctx, Umatch.ball.x, Umatch.ball.y, Umatch.ball.radius, Umatch.ball.color);
         }
 
-        if (Umatch?.id)
-        {
+        if (Umatch?.id) {
           console.log('-----Umatch:', Umatch.id);
           socket.emit('updateGame', Umatch.id, (resp: any) => {
             setUmatch(resp)
@@ -285,51 +285,56 @@ const Home: NextPage = () => {
       }
     }, 1000 / 50);
 
-    // document.addEventListener("keydown", (event) => {
-    //   let toadd = 0;
-    //   if (event.key === 'w' || event.key === 'W') {
-    //     if (user.y <= 0)
-    //       toadd = 0;
-    //     else
-    //       toadd -= 5;
-    //   }
-    //   else if (event.key === 's' || event.key === 's') {
-    //     if (toadd + 100 >= canvHeight)
-    //       toadd = canvHeight - 100;
-    //     else
-    //       toadd += 5;
-    //   }
-    //   startMoving(toadd);
-    // });
+    document.addEventListener("keydown", (event) => {
+      let toadd = 0;
+      if (event.key === 'w' || event.key === 'W') {
+        if (user.y <= 0)
+          toadd = 0;
+        else
+          toadd -= 5;
+      }
+      else if (event.key === 's' || event.key === 's') {
+        if (toadd + 100 >= canvHeight)
+          toadd = canvHeight - 100;
+        else
+          toadd += 5;
+      }
+      startMoving(toadd);
+    });
 
-    // function startMoving(toadd: any) {
-    //   if (inter === undefined) {
-    //     loop(toadd);
-    //   }
-    // }
+    function startMoving(toadd: any) {
+      if (inter === undefined) {
+        loop(toadd);
+      }
+    }
 
-    // function loop(toadd: any) {
-    //   move(toadd);
-    //   inter = setTimeout(loop, 1000 / 60, toadd);
-    // }
+    function loop(toadd: any) {
+      move(toadd);
+      inter = setTimeout(loop, 1000 / 60, toadd);
+    }
 
-    // function move(toadd: any) {
-    //   user.y += toadd;
-    //   if (user.y <= 0)
-    //     user.y = 0;
-    //   else if (user.y + 100 >= canvHeight)
-    //     user.y = canvHeight - 100;
-    //   socket.emit('updateUser', { user })
-    // }
+    function move(toadd: any) {
+      if (Umatch?.playerOne) {
+        Umatch.playerOne.y += toadd;
+        if (Umatch?.playerOne.y <= 0)
+          Umatch.playerOne.y = 0;
+        else if (Umatch.playerOne.y + 100 >= canvHeight)
+          Umatch.playerOne.y = canvHeight - 100;
+      }
+      socket.emit('updateplayers', Umatch, (resp: any) => {
+        setUmatch(resp);
+      });
+    }
 
-    // function stopMoving() {
-    //   clearTimeout(inter);
-    //   inter = undefined;
-    // }
+    function stopMoving() {
+      clearTimeout(inter);
+      inter = undefined;
+    }
 
-    // document.addEventListener("keyup", (event) => {
-    // stopMoving();
-    // });
+    document.addEventListener("keyup", (event) => {
+      stopMoving();
+    });
+
     return () => clearInterval(interval);
   }, [Umatch])
   return (

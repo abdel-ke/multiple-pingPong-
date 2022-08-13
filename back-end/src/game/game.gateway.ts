@@ -39,4 +39,10 @@ export class GameGateway {
     // console.log("updateGame ", id);
     return this.gameService.update(id);
   }
+
+  @SubscribeMessage('updateplayers')
+  updateplayers(@MessageBody() match: Match) {
+    this.gameService.updateMovement(match);
+  }
+
 }

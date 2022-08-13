@@ -14,4 +14,5 @@ export declare class GameService {
     collision(b: any, p: any): boolean;
     resetBall(id: number): void;
     update(id: number): Match;
+    updateMovement(movement: any): Match;
 }
