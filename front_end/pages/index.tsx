@@ -109,6 +109,7 @@ const Home: NextPage = () => {
         color: string
     }
 }>();
+
   useEffect(() => {
     socket.connect();
     socket.off('connect').on('connect', () => {
@@ -119,11 +120,16 @@ const Home: NextPage = () => {
     })
 
     socket.on('JoinMatch', (match) => {
-      console.log('---match:', match);
+      // console.log('---match:', match);
       setStarted(false)
       setJoined(true);
       setUmatch(match);
     })
+
+    // socket.on('updateGame', (match) => {
+    //   // console.log('---UpdateMatch:', match);
+    //   setUmatch(match);
+    // })
 
     return () => {
       socket.off('connect');
@@ -132,7 +138,7 @@ const Home: NextPage = () => {
   }, []);
 
   useEffect(() => {
-      console.log('---Umatch:', Umatch);
+      // console.log('---Umatch:', Umatch);
   }, [Umatch]);
 
   const sendName = (e: any) => {
@@ -140,7 +146,7 @@ const Home: NextPage = () => {
     // generate a random match id
     const matchId = typedMatchId ? parseInt(typedMatchId) : Math.floor(Math.random() * 1000000);
     socket.emit('createGame', { matchId, name: name }, (ret: any) => {
-      console.log('ret:', ret);
+      // console.log('ret:', ret);
       if (ret?.playerTwo?.socketId) {
         setMatchId(matchId);
         setJoined(true);
@@ -200,7 +206,6 @@ const Home: NextPage = () => {
         // console.log(user);
         // drawText(ctx, user.score.toString(), canvWidth / 4, canvHeight / 5, "white");
         
-        console.log("----------Bara", Umatch);
         if (Umatch?.playerOne || Umatch?.playerTwo) {
           drawText(ctx, Umatch.playerOne.score.toString(), canvWidth / 4, canvHeight / 5, "white");
           // drawText(ctx, com.score.toString(), 3 * canvWidth / 4, canvHeight / 5, "white");
@@ -211,8 +216,20 @@ const Home: NextPage = () => {
           drawRect(ctx, Umatch.playerTwo.x, Umatch.playerTwo.y, Umatch.playerTwo.width, Umatch.playerTwo.height, Umatch.playerTwo.color);
           // //draw the ball
           drawCircle(ctx, Umatch.ball.x, Umatch.ball.y, Umatch.ball.radius, Umatch.ball.color);
-          console.log("-------------sroooow");
         }
+
+        if (Umatch?.id)
+        {
+          console.log('-----Umatch:', Umatch.id);
+          socket.emit('updateGame', Umatch.id, (resp: any) => {
+            setUmatch(resp)
+          });
+        }
+
+        // socket.on('updateGame', (match) => {
+        //   console.log('---UpdateMatch:', match);
+        //   setUmatch(match);
+        // })
         // drawRect(ctx, user.x, user.y, user.width, user.height, user.color);
         // drawRect(ctx, com.x, com.y, com.width, com.height, com.color);
         // // //draw the ball
@@ -234,8 +251,6 @@ const Home: NextPage = () => {
         // // the ball has a velocity
         // ball.x += ball.velocityX;
         // ball.y += ball.velocityY;
-        // // setball({...ball, x: ball.x + ball.velocityX});
-        // // setball({...ball, y: ball.y + ball.velocityY});
         // // computer plays for itself, and we must be able to beat it
         // // sample AI to control the com paddle
         // com.y += (ball.y - (com.y + com.height / 2)) * 1;

@@ -11,12 +11,12 @@ const common_1 = require("@nestjs/common");
 let GameService = class GameService {
     constructor() {
         this.matches = [];
+        this.canvWidth = 600;
+        this.canvheight = 400;
     }
     setPlayer(setPlayerDto, clientId) {
         const { matchId, name } = setPlayerDto;
         const match = this.matches.find(m => m.id === matchId);
-        const canvWidth = 600;
-        const canvheight = 400;
         if (!match) {
             const newMatch = {
                 id: matchId,
@@ -24,7 +24,7 @@ let GameService = class GameService {
                     socketId: clientId,
                     name,
                     x: 0,
-                    y: (canvheight - 100) / 2,
+                    y: (this.canvheight - 100) / 2,
                     width: 10,
                     height: 100,
                     color: 'white',
@@ -33,16 +33,16 @@ let GameService = class GameService {
                 playerTwo: {
                     socketId: null,
                     name: null,
-                    x: canvWidth - 10,
-                    y: (canvheight - 100) / 2,
+                    x: this.canvWidth - 10,
+                    y: (this.canvheight - 100) / 2,
                     width: 10,
                     height: 100,
                     color: 'white',
                     score: 220,
                 },
                 ball: {
-                    x: canvWidth / 2,
-                    y: canvheight / 2,
+                    x: this.canvWidth / 2,
+                    y: this.canvheight / 2,
                     radius: 10,
                     speed: 7,
                     velocityX: 7,
@@ -62,6 +62,56 @@ let GameService = class GameService {
                 status: 'second player',
                 match,
             };
+        }
+    }
+    collision(b, p) {
+        p.top = p.y;
+        p.bottom = p.y + p.height;
+        p.left = p.x;
+        p.right = p.x + p.width;
+        b.top = b.y - b.radius;
+        b.bottom = b.y + b.radius;
+        b.left = b.x - b.radius;
+        b.right = b.x + b.radius;
+        return (b.right > p.left && b.bottom > p.top && b.left < p.right && b.top < p.bottom);
+    }
+    resetBall(id) {
+        const match = this.matches.find(m => m.id === id);
+        if (match.id === id) {
+            match.ball.x = this.canvWidth / 2;
+            match.ball.y = this.canvheight / 2;
+            match.ball.speed = 7;
+            match.ball.velocityX = -match.ball.velocityX;
+        }
+    }
+    update(id) {
+        const match = this.matches.find(m => m.id === id);
+        if (match.id === id) {
+            if (match.ball.x - match.ball.radius < 0) {
+                match.playerTwo.score++;
+                this.resetBall(id);
+            }
+            else if (match.ball.x + match.ball.radius > this.canvWidth) {
+                match.playerOne.score++;
+                this.resetBall(id);
+            }
+            match.ball.x += match.ball.velocityX;
+            match.ball.y += match.ball.velocityY;
+            match.playerTwo.y += (match.ball.y - (match.playerTwo.y + match.playerTwo.height / 2)) * 1;
+            if (match.ball.y - match.ball.radius < 0 || match.ball.y + match.ball.radius > this.canvheight) {
+                match.ball.velocityY = -match.ball.velocityY;
+            }
+            let player = (match.ball.x + match.ball.radius < this.canvWidth / 2) ? match.playerOne : match.playerTwo;
+            if (this.collision(match.ball, player)) {
+                let collidPoint = match.ball.y - (player.y + player.height / 2);
+                collidPoint /= player.height / 2;
+                let angleRad = collidPoint * (Math.PI / 4);
+                let direction = (match.ball.x + match.ball.radius < this.canvWidth / 2) ? 1 : -1;
+                match.ball.velocityX = direction * match.ball.speed * Math.cos(angleRad);
+                match.ball.velocityY = match.ball.speed * Math.sin(angleRad);
+                match.ball.speed += 0.1;
+            }
+            return match;
         }
     }
 };

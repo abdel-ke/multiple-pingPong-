@@ -2,6 +2,8 @@ import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, Conne
 import { GameService } from './game.service';
 import { Server, Socket } from 'Socket.io'
 import { SetPlayerDto } from './dto/SetPlayer.dto';
+import { setInterval } from 'timers/promises';
+import { Match } from './entities/game.entity';
 
 @WebSocketGateway({
   cors: {
@@ -18,10 +20,10 @@ export class GameGateway {
     @MessageBody() setPlayerDto: SetPlayerDto,
     @ConnectedSocket() client: Socket
   ) {
-    console.log("SetPlayerDto ", setPlayerDto);
+    // console.log("SetPlayerDto ", setPlayerDto);
     const resp = this.gameService.setPlayer(setPlayerDto, client.id);
     client.join(setPlayerDto.matchId.toString());
-    
+
     if (resp.status === 'first player') {
       return 'first player';
     }
@@ -32,21 +34,9 @@ export class GameGateway {
       // this.server.to(resp.match.playerTwo.socketId).emit('JoinMatch', resp.match);
     }
   }
-  @SubscribeMessage('JoinMatchServer')
-  JoinMatchServer(
-    @MessageBody() setPlayerDto: SetPlayerDto,
-    @ConnectedSocket() client: Socket
-  ) {
-    console.log("SetPlayerDto ", setPlayerDto);
-    const resp = this.gameService.setPlayer(setPlayerDto, client.id);
-    // if (resp.status === 'first player') {
-    //   return 'first player';
-    // }
-    // else {
-    //   this.server.to(resp.match.playerOne.socketId).emit('JoinMatch', resp.match);
-    //   this.server.to(resp.match.playerTwo.socketId).emit('JoinMatch', resp.match);
-    //   return resp.match;
-    // }
-   
+  @SubscribeMessage('updateGame')
+  updateGame(@MessageBody() id: number) {
+    // console.log("updateGame ", id);
+    return this.gameService.update(id);
   }
 }

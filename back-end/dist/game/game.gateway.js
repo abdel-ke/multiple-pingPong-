@@ -22,7 +22,6 @@ let GameGateway = class GameGateway {
         this.gameService = gameService;
     }
     setInitPlayer(setPlayerDto, client) {
-        console.log("SetPlayerDto ", setPlayerDto);
         const resp = this.gameService.setPlayer(setPlayerDto, client.id);
         client.join(setPlayerDto.matchId.toString());
         if (resp.status === 'first player') {
@@ -33,9 +32,8 @@ let GameGateway = class GameGateway {
             return resp.match;
         }
     }
-    JoinMatchServer(setPlayerDto, client) {
-        console.log("SetPlayerDto ", setPlayerDto);
-        const resp = this.gameService.setPlayer(setPlayerDto, client.id);
+    updateGame(id) {
+        return this.gameService.update(id);
     }
 };
 __decorate([
@@ -52,14 +50,12 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], GameGateway.prototype, "setInitPlayer", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('JoinMatchServer'),
+    (0, websockets_1.SubscribeMessage)('updateGame'),
     __param(0, (0, websockets_1.MessageBody)()),
-    __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [SetPlayer_dto_1.SetPlayerDto,
-        Socket_io_1.Socket]),
+    __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", void 0)
-], GameGateway.prototype, "JoinMatchServer", null);
+], GameGateway.prototype, "updateGame", null);
 GameGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {
