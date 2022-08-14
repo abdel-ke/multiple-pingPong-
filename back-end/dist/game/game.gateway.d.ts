@@ -9,4 +9,5 @@ export declare class GameGateway {
     setInitPlayer(setPlayerDto: SetPlayerDto, client: Socket): Match | "first player";
     updateGame(id: number): Match;
     updateplayers(match: Match): void;
+    keydown(data: any): void;
 }

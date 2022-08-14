@@ -87,6 +87,7 @@ export class GameService {
 
   update(id: number) {
     const match = this.matches.find(m => m.id === id);
+    if (match?.id)
     if (match.id === id) {
       if (match.ball.x - match.ball.radius < 0) {
         match.playerTwo.score++;
@@ -141,7 +142,21 @@ export class GameService {
     }
     return match;
   }
+  keydown(data: any) {
+    const match = this.matches.find(m => m.id === data.id);
+    if (match.id === data.id) {
+      match.playerOne.y += data.y;
+      if (match.playerOne.y < 0) {
+        match.playerOne.y = 0;
+      }
+      else if (match.playerOne.y + match.playerOne.height > this.canvheight) {
+        match.playerOne.y = this.canvheight - match.playerOne.height;
+      }
+    }
+    return match;
+  }
 }
+
 // const match = this.matches.find(m => m.id === movement.id);
 //     if (match.id === movement.id) {
 //       match.playerOne = movement.playerOne;

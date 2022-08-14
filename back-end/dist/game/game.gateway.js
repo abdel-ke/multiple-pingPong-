@@ -39,6 +39,9 @@ let GameGateway = class GameGateway {
     updateplayers(match) {
         this.gameService.updateMovement(match);
     }
+    keydown(data) {
+        this.gameService.keydown(data);
+    }
 };
 __decorate([
     (0, websockets_1.WebSocketServer)(),
@@ -67,6 +70,13 @@ __decorate([
     __metadata("design:paramtypes", [game_entity_1.Match]),
     __metadata("design:returntype", void 0)
 ], GameGateway.prototype, "updateplayers", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('keydown'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], GameGateway.prototype, "keydown", null);
 GameGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {

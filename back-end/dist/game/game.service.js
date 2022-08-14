@@ -86,36 +86,50 @@ let GameService = class GameService {
     }
     update(id) {
         const match = this.matches.find(m => m.id === id);
-        if (match.id === id) {
-            if (match.ball.x - match.ball.radius < 0) {
-                match.playerTwo.score++;
-                this.resetBall(id);
+        if (match === null || match === void 0 ? void 0 : match.id)
+            if (match.id === id) {
+                if (match.ball.x - match.ball.radius < 0) {
+                    match.playerTwo.score++;
+                    this.resetBall(id);
+                }
+                else if (match.ball.x + match.ball.radius > this.canvWidth) {
+                    match.playerOne.score++;
+                    this.resetBall(id);
+                }
+                match.playerTwo.y += (match.ball.y - (match.playerTwo.y + match.playerTwo.height / 2)) * 1;
+                if (match.ball.y - match.ball.radius < 0 || match.ball.y + match.ball.radius > this.canvheight) {
+                    match.ball.velocityY = -match.ball.velocityY;
+                }
+                let player = (match.ball.x + match.ball.radius < this.canvWidth / 2) ? match.playerOne : match.playerTwo;
+                if (this.collision(match.ball, player)) {
+                    let collidPoint = match.ball.y - (player.y + player.height / 2);
+                    collidPoint /= player.height / 2;
+                    let angleRad = collidPoint * (Math.PI / 4);
+                    let direction = (match.ball.x + match.ball.radius < this.canvWidth / 2) ? 1 : -1;
+                    match.ball.velocityX = direction * match.ball.speed * Math.cos(angleRad);
+                    match.ball.velocityY = match.ball.speed * Math.sin(angleRad);
+                    match.ball.speed += 0.1;
+                }
+                return match;
             }
-            else if (match.ball.x + match.ball.radius > this.canvWidth) {
-                match.playerOne.score++;
-                this.resetBall(id);
-            }
-            match.playerTwo.y += (match.ball.y - (match.playerTwo.y + match.playerTwo.height / 2)) * 1;
-            if (match.ball.y - match.ball.radius < 0 || match.ball.y + match.ball.radius > this.canvheight) {
-                match.ball.velocityY = -match.ball.velocityY;
-            }
-            let player = (match.ball.x + match.ball.radius < this.canvWidth / 2) ? match.playerOne : match.playerTwo;
-            if (this.collision(match.ball, player)) {
-                let collidPoint = match.ball.y - (player.y + player.height / 2);
-                collidPoint /= player.height / 2;
-                let angleRad = collidPoint * (Math.PI / 4);
-                let direction = (match.ball.x + match.ball.radius < this.canvWidth / 2) ? 1 : -1;
-                match.ball.velocityX = direction * match.ball.speed * Math.cos(angleRad);
-                match.ball.velocityY = match.ball.speed * Math.sin(angleRad);
-                match.ball.speed += 0.1;
-            }
-            return match;
-        }
     }
     updateMovement(movement) {
         const match = this.matches.find(m => m.id === movement.id);
         if (match.id === movement.id) {
             match.playerOne.y += movement.y;
+            if (match.playerOne.y < 0) {
+                match.playerOne.y = 0;
+            }
+            else if (match.playerOne.y + match.playerOne.height > this.canvheight) {
+                match.playerOne.y = this.canvheight - match.playerOne.height;
+            }
+        }
+        return match;
+    }
+    keydown(data) {
+        const match = this.matches.find(m => m.id === data.id);
+        if (match.id === data.id) {
+            match.playerOne.y += data.y;
             if (match.playerOne.y < 0) {
                 match.playerOne.y = 0;
             }

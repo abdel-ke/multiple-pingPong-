@@ -15,4 +15,5 @@ export declare class GameService {
     resetBall(id: number): void;
     update(id: number): Match;
     updateMovement(movement: any): Match;
+    keydown(data: any): Match;
 }

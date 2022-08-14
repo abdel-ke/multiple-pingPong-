@@ -45,4 +45,11 @@ export class GameGateway {
     this.gameService.updateMovement(match);
   }
 
+  @SubscribeMessage('keydown')
+  keydown(@MessageBody() data: any) {
+    // console.log("id : ", data.id);
+    // console.log("key: ", data.key);
+    
+    this.gameService.keydown(data);
+  }
 }

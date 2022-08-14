@@ -285,58 +285,71 @@ const Home: NextPage = () => {
       }
     }, 1000 / 50);
 
-    document.addEventListener("keydown", (event) => {
-      let toadd = 0;
-      if (event.key === 'w' || event.key === 'W') {
-        if (user.y <= 0)
-          toadd = 0;
-        else
-          toadd -= 5;
-      }
-      else if (event.key === 's' || event.key === 's') {
-        if (toadd + 100 >= canvHeight)
-          toadd = canvHeight - 100;
-        else
-          toadd += 5;
-      }
-      startMoving(toadd);
-    });
+    // document.addEventListener("keydown", (event) => {
+    //   let toadd = 0;
+    //   if (event.key === 'w' || event.key === 'W') {
+    //     if (user.y <= 0)
+    //       toadd = 0;
+    //     else
+    //       toadd -= 5;
+    //   }
+    //   else if (event.key === 's' || event.key === 's') {
+    //     if (toadd + 100 >= canvHeight)
+    //       toadd = canvHeight - 100;
+    //     else
+    //       toadd += 5;
+    //   }
+    //   startMoving(toadd);
+    // });
 
-    function startMoving(toadd: any) {
-      if (inter === undefined) {
-        loop(toadd);
-      }
-    }
+    // function startMoving(toadd: any) {
+    //   if (inter === undefined) {
+    //     loop(toadd);
+    //   }
+    // }
 
-    function loop(toadd: any) {
-      move(toadd);
-      inter = setTimeout(loop, 1000 / 60, toadd);
-    }
+    // function loop(toadd: any) {
+    //   move(toadd);
+    //   inter = setTimeout(loop, 1000 / 60, toadd);
+    // }
 
-    function move(toadd: any) {
-      if (Umatch?.playerOne) {
-        Umatch.playerOne.y += toadd;
-        if (Umatch?.playerOne.y <= 0)
-          Umatch.playerOne.y = 0;
-        else if (Umatch.playerOne.y + 100 >= canvHeight)
-          Umatch.playerOne.y = canvHeight - 100;
-      }
-      socket.emit('updateplayers', Umatch, (resp: any) => {
-        setUmatch(resp);
-      });
-    }
+    // function move(toadd: any) {
+    //   if (Umatch?.playerOne) {
+    //     Umatch.playerOne.y += toadd;
+    //     if (Umatch?.playerOne.y <= 0)
+    //       Umatch.playerOne.y = 0;
+    //     else if (Umatch.playerOne.y + 100 >= canvHeight)
+    //       Umatch.playerOne.y = canvHeight - 100;
+    //   }
+    //   socket.emit('updateplayers', Umatch, (resp: any) => {
+    //     setUmatch(resp);
+    //   });
+    // }
 
-    function stopMoving() {
-      clearTimeout(inter);
-      inter = undefined;
-    }
+    // function stopMoving() {
+    //   clearTimeout(inter);
+    //   inter = undefined;
+    // }
 
-    document.addEventListener("keyup", (event) => {
-      stopMoving();
-    });
+    // document.addEventListener("keyup", (event) => {
+    //   stopMoving();
+    // });
 
     return () => clearInterval(interval);
   }, [Umatch])
+
+  function keydown(e: any) {
+    const data = {
+      id: Umatch?.id,
+      key: e.key,
+    }
+      socket.emit('keydown', data);
+  }
+
+  useEffect(() => {
+    document.addEventListener("keydown", keydown);
+  }, [])
+
   return (
     <div>
       {!started && !joined && <form className={`w-full  ${styles.cont}`} onSubmit={sendName}>
