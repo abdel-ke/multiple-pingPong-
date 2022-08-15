@@ -21,11 +21,8 @@ let GameTwoGateway = class GameTwoGateway {
         console.log('Websocket Server Started,Listening on Port:3000');
     }
     handleConnection(client) {
-        const state = this.game.createGameState();
-        if (state)
-            console.log("state", state);
-        else
-            console.log("state is null");
+        client.emit('init', { data: 'Welcome to the game' });
+        const state = this.gameTwoService.createGameState();
         this.gameTwoService.startGameInterval(client, state);
     }
     handleDisconnect(client) {

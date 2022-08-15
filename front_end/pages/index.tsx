@@ -11,33 +11,33 @@ const Home: NextPage = () => {
   let ctx: any;
   const canvWidth = 600;
   const canvHeight = 400;
-  const gameState = {
-    playerOne: {
-      x: 0,
-      y: (canvHeight - 100) / 2,
-      width: 10,
-      height: 100,
-      color: 'white',
-      score: 0,
-    },
-    playerTwo: {
-      x: canvWidth - 10,
-      y: (canvHeight - 100) / 2,
-      width: 10,
-      height: 100,
-      color: 'white',
-      score: 0,
-    },
-    ball: {
-      x: canvWidth / 2,
-      y: canvHeight / 2,
-      radius: 10,
-      speed: 7,
-      velocityX: 7,
-      velocityY: 7,
-      color: "white"
-    }
-  }
+  // const gameState = {
+  //   playerOne: {
+  //     x: 0,
+  //     y: (canvHeight - 100) / 2,
+  //     width: 10,
+  //     height: 100,
+  //     color: 'white',
+  //     score: 0,
+  //   },
+  //   playerTwo: {
+  //     x: canvWidth - 10,
+  //     y: (canvHeight - 100) / 2,
+  //     width: 10,
+  //     height: 100,
+  //     color: 'white',
+  //     score: 0,
+  //   },
+  //   ball: {
+  //     x: canvWidth / 2,
+  //     y: canvHeight / 2,
+  //     radius: 10,
+  //     speed: 7,
+  //     velocityX: 7,
+  //     velocityY: 7,
+  //     color: "white"
+  //   }
+  // }
 
   // draw rect
   function drawRect(x: number, y: number, w: number, h: number, color: string) {
@@ -47,13 +47,13 @@ const Home: NextPage = () => {
     }
   }
 
-  function  drawNet() {
+  function drawNet() {
     for (var i = 0; i <= canvHeight; i += 15)
       drawRect((canvWidth / 2) - 1, 0 + i, 2, 10, "white");
   }
 
   // //draw circle
-  function  drawCircle(x: number, y: number, r: number, color: string) {
+  function drawCircle(x: number, y: number, r: number, color: string) {
     if (ctx) {
       ctx.fillStyle = color;
       ctx.beginPath();
@@ -64,7 +64,7 @@ const Home: NextPage = () => {
   }
 
   // // draw Text
-  function  drawText(text: string, x: number, y: number, color: string) {
+  function drawText(text: string, x: number, y: number, color: string) {
     if (ctx) {
       ctx.fillStyle = color;
       ctx.font = '45px fantasy';
@@ -82,18 +82,20 @@ const Home: NextPage = () => {
       document.addEventListener("keydown", keydown);
     }
   }
-  
-  function  keydown(e: any) {
+
+  function keydown(e: any) {
     // console.log(e.keyCode);
   }
-  
+
   function paintGame(gameState: any) {
     const ball = gameState.ball;
+    drawRect(0, 0, canvas.width, canvas.height, "black");
     drawNet();
     drawCircle(ball.x, ball.y, ball.radius, ball.color);
+    paintPlayers(gameState);
   }
 
-  function  paintPlayers() {
+  function paintPlayers(gameState: any) {
     const pOne = gameState.playerOne;
     const pTwo = gameState.playerTwo;
     drawRect(pOne.x, pOne.y, pOne.width, pOne.height, pOne.color);
@@ -105,8 +107,6 @@ const Home: NextPage = () => {
   useEffect(() => {
     console.log("useeffect");
     init();
-    // paintGame();
-    paintPlayers();
   })
 
   useEffect(() => {
@@ -121,23 +121,26 @@ const Home: NextPage = () => {
     })
 
     socket.on('init', handlInit);
- 
+
     socket.on('gameState', handlGameState);
 
     return () => {
       socket.off('connect');
       socket.off('disconnect');
       socket.off('init');
+      socket.off('gameState');
     };
   }, []);
-  
+
   function handlInit(msg: string) {
     console.log("msg: ", msg);
   }
 
   function handlGameState(gameState: string) {
     gameState = JSON.parse(gameState);
-    // requestAnimationFrame(() => {paintGame(gameState));
+    let count = Object.keys(gameState).length;
+    console.log("count: ", count);
+    requestAnimationFrame(() => paintGame(gameState));
   }
 
   return (

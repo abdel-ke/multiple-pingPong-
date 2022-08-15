@@ -10,12 +10,11 @@ exports.GameTwoModule = void 0;
 const common_1 = require("@nestjs/common");
 const game_two_service_1 = require("./game-two.service");
 const game_two_gateway_1 = require("./game-two.gateway");
-const game_1 = require("./game");
 let GameTwoModule = class GameTwoModule {
 };
 GameTwoModule = __decorate([
     (0, common_1.Module)({
-        providers: [game_two_gateway_1.GameTwoGateway, game_two_service_1.GameTwoService, game_1.Game],
+        providers: [game_two_gateway_1.GameTwoGateway, game_two_service_1.GameTwoService],
     })
 ], GameTwoModule);
 exports.GameTwoModule = GameTwoModule;
