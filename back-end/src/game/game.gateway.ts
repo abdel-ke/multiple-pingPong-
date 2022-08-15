@@ -1,6 +1,6 @@
 import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket } from '@nestjs/websockets';
 import { GameService } from './game.service';
-import { Server, Socket } from 'Socket.io'
+import { Server, Socket } from 'socket.io'
 import { SetPlayerDto } from './dto/SetPlayer.dto';
 import { setInterval } from 'timers/promises';
 import { Match } from './entities/game.entity';
@@ -14,7 +14,7 @@ export class GameGateway {
   @WebSocketServer()
   server: Server;
   constructor(private readonly gameService: GameService) { }
-
+  
   @SubscribeMessage('createGame')
   setInitPlayer(
     @MessageBody() setPlayerDto: SetPlayerDto,

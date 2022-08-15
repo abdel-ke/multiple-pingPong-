@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GameGateway = void 0;
 const websockets_1 = require("@nestjs/websockets");
 const game_service_1 = require("./game.service");
-const Socket_io_1 = require("Socket.io");
+const socket_io_1 = require("socket.io");
 const SetPlayer_dto_1 = require("./dto/SetPlayer.dto");
 const game_entity_1 = require("./entities/game.entity");
 let GameGateway = class GameGateway {
@@ -45,7 +45,7 @@ let GameGateway = class GameGateway {
 };
 __decorate([
     (0, websockets_1.WebSocketServer)(),
-    __metadata("design:type", Socket_io_1.Server)
+    __metadata("design:type", socket_io_1.Server)
 ], GameGateway.prototype, "server", void 0);
 __decorate([
     (0, websockets_1.SubscribeMessage)('createGame'),
@@ -53,7 +53,7 @@ __decorate([
     __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [SetPlayer_dto_1.SetPlayerDto,
-        Socket_io_1.Socket]),
+        socket_io_1.Socket]),
     __metadata("design:returntype", void 0)
 ], GameGateway.prototype, "setInitPlayer", null);
 __decorate([
