@@ -138,8 +138,6 @@ const Home: NextPage = () => {
 
   function handlGameState(gameState: string) {
     gameState = JSON.parse(gameState);
-    let count = Object.keys(gameState).length;
-    console.log("count: ", count);
     requestAnimationFrame(() => paintGame(gameState));
   }
 
