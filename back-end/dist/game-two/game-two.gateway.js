@@ -8,6 +8,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GameTwoGateway = void 0;
 const websockets_1 = require("@nestjs/websockets");
@@ -21,18 +24,58 @@ let GameTwoGateway = class GameTwoGateway {
         console.log('Websocket Server Started,Listening on Port:3000');
     }
     handleConnection(client) {
-        client.emit('init', { data: 'Welcome to the game' });
-        const state = this.gameTwoService.createGameState();
-        this.gameTwoService.startGameInterval(client, state);
     }
     handleDisconnect(client) {
         console.log(`Client disconnected: ${client.id}`);
+    }
+    handleKeyDown(keyCode, client) {
+        const ret = this.gameTwoService.handleKeyDown(keyCode);
+        this.gameTwoService.updatePlayer(client, this.gameTwoService.state, ret);
+    }
+    handleNewGame(client) {
+        this.gameTwoService.handleNewGame(client);
+    }
+    handleJoinGame(gameCode, client) {
+        this.gameTwoService.handleJoinGame(this.server, client, gameCode);
+    }
+    handleCanvaSize(data) {
+        this.gameTwoService.handleCanvaSize(data.width, data.height);
     }
 };
 __decorate([
     (0, websockets_1.WebSocketServer)(),
     __metadata("design:type", socket_io_1.Server)
 ], GameTwoGateway.prototype, "server", void 0);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('keyDown'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, socket_io_1.Socket]),
+    __metadata("design:returntype", void 0)
+], GameTwoGateway.prototype, "handleKeyDown", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('newGame'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket]),
+    __metadata("design:returntype", void 0)
+], GameTwoGateway.prototype, "handleNewGame", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('joinGame'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, socket_io_1.Socket]),
+    __metadata("design:returntype", void 0)
+], GameTwoGateway.prototype, "handleJoinGame", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('canvaSize'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], GameTwoGateway.prototype, "handleCanvaSize", null);
 GameTwoGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {

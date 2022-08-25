@@ -1,8 +1,15 @@
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 export declare class GameTwoService {
     constructor();
+    state: any;
+    clientRooms: any;
+    gameActive: boolean;
+    canvasWidth: number;
+    canvasHeight: number;
+    handleCanvaSize(width: number, height: number): void;
     createGameState(): {
         playerOne: {
+            id: string;
             x: number;
             y: number;
             width: number;
@@ -11,6 +18,7 @@ export declare class GameTwoService {
             score: number;
         };
         playerTwo: {
+            id: string;
             x: number;
             y: number;
             width: number;
@@ -32,5 +40,13 @@ export declare class GameTwoService {
     collision(b: any, p: any): boolean;
     resetBall(state: any): void;
     gameloop(state: any): false | 2 | 1;
-    startGameInterval(clinet: Socket, state: any): void;
+    handleKeyDown(keyCode: any): 0 | 1 | -1;
+    updatePlayer(client: Socket, state: any, ret: number): void;
+    updatePlayerOne(state: any, ret: number): void;
+    updatePlayerTwo(state: any, ret: number): void;
+    startGameInterval(server: Server, state: any, roomName: string): void;
+    handleNewGame(client: Socket): void;
+    handleJoinGame(server: Server, client: Socket, gameCode: string): void;
+    emitGameState(server: Server, gameState: any, roomName: string): void;
+    emitGameOver(server: Server, roomName: string, winner: number): void;
 }

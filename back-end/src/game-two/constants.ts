@@ -1,6 +1,6 @@
 export const canvasWidth = 600;
 export const canvasHeight = 400;
-export const FRAMERATE = 5;
+export const FRAMERATE = 30;
 
 
 export const FRAME_RATE = 10;

@@ -7,4 +7,8 @@ export declare class GameTwoGateway {
     afterInit(): void;
     handleConnection(client: Socket): void;
     handleDisconnect(client: Socket): void;
+    handleKeyDown(keyCode: number, client: Socket): void;
+    handleNewGame(client: Socket): void;
+    handleJoinGame(gameCode: string, client: Socket): void;
+    handleCanvaSize(data: any): void;
 }
