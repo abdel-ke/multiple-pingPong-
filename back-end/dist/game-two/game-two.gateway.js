@@ -24,7 +24,7 @@ let GameTwoGateway = class GameTwoGateway {
         console.log('Websocket Server Started,Listening on Port:3000');
     }
     handleConnection(client) {
-        console.log(`Client connected: ${client.id}`, "    length: ", this.server.engine.clientsCount, "  server:   ", Object.keys(this.server.sockets).length);
+        console.log(`Client connected: ${client.id}`, " length: ", this.server.engine.clientsCount, "  server:   ", Object.keys(this.server.sockets).length);
     }
     handleDisconnect(client) {
         console.log(`Client disconnected: ${client.id}`);
@@ -45,6 +45,9 @@ let GameTwoGateway = class GameTwoGateway {
     }
     handleJoinGame(data, client) {
         this.gameTwoService.handleJoinGame(this.server, client, data.gameCode, data.name);
+    }
+    handleSpectateGame(gameCode, client) {
+        this.gameTwoService.handleSpectateGame(this.server, client, gameCode);
     }
     handleCanvaSize(data) {
         this.gameTwoService.handleCanvaSize(data.width, data.height);
@@ -78,6 +81,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
     __metadata("design:returntype", void 0)
 ], GameTwoGateway.prototype, "handleJoinGame", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('spectateGame'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, socket_io_1.Socket]),
+    __metadata("design:returntype", void 0)
+], GameTwoGateway.prototype, "handleSpectateGame", null);
 __decorate([
     (0, websockets_1.SubscribeMessage)('canvaSize'),
     __param(0, (0, websockets_1.MessageBody)()),

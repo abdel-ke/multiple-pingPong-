@@ -50,6 +50,7 @@ export declare class GameTwoService {
     startGameInterval(server: Server, state: any, roomName: string): void;
     handleNewGame(client: Socket, name: string): void;
     handleJoinGame(server: Server, client: Socket, gameCode: string, name: string): void;
+    handleSpectateGame(server: Server, client: Socket, gameCode: string): void;
     emitGameState(server: Server, gameState: any, roomName: string): void;
     emitGameOver(server: Server, roomName: string, winner: any): void;
     emitPlayerDesconnected(server: Server, roomName: string, winner: number): void;

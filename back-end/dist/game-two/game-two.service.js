@@ -107,7 +107,7 @@ let GameTwoService = class GameTwoService {
             ball.velocityY = ball.speed * Math.sin(angleRad);
             ball.speed += 0.1;
         }
-        if (playerOne.score == 2) {
+        if (playerOne.score == 200) {
             playerOne.score = 0;
             playerTwo.score = 0;
             ball.x = this.canvasWidth / 2;
@@ -116,7 +116,7 @@ let GameTwoService = class GameTwoService {
             ball.velocityY = 7;
             return 1;
         }
-        if (playerTwo.score == 2) {
+        if (playerTwo.score == 200) {
             playerOne.score = 0;
             playerTwo.score = 0;
             ball.x = this.canvasWidth / 2;
@@ -220,9 +220,11 @@ let GameTwoService = class GameTwoService {
             return;
         this.gameActive = true;
         server.sockets.adapter.rooms.get(gameCode).forEach((value) => room = value);
+        console.log("room: ", room);
         let allUsers;
         if (room) {
             allUsers = server.sockets;
+            console.log("allUsers: ", allUsers);
         }
         let numClients = 0;
         if (allUsers) {
@@ -239,6 +241,17 @@ let GameTwoService = class GameTwoService {
         this.state[gameCode].playerTwo.name = name;
         client.emit('init', 2);
         this.startGameInterval(server, this.state, gameCode);
+    }
+    handleSpectateGame(server, client, gameCode) {
+        console.log("im here:", gameCode);
+        let room;
+        if (!gameCode)
+            return;
+        server.sockets.adapter.rooms.get(gameCode).forEach((value) => room = value);
+        setInterval(() => {
+            const state = this.state[gameCode];
+            server.emit("spectateState", JSON.stringify(state));
+        }, 1000 / constants_1.FRAMERATE);
     }
     emitGameState(server, gameState, roomName) {
         server.sockets.in(roomName).emit("gameState", JSON.stringify(gameState));

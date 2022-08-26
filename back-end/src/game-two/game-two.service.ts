@@ -132,7 +132,7 @@ export class GameTwoService {
         }
 
         // playerOne win
-        if (playerOne.score == 2) {
+        if (playerOne.score == 200) {
             // this.gameActive = false;
             playerOne.score = 0;
             playerTwo.score = 0;
@@ -143,7 +143,7 @@ export class GameTwoService {
             return 1;
         }
         // playerTwo win
-        if (playerTwo.score == 2) {
+        if (playerTwo.score == 200) {
             // this.gameActive = false;
             playerOne.score = 0;
             playerTwo.score = 0;
@@ -257,11 +257,13 @@ export class GameTwoService {
             return;
         this.gameActive = true;
         server.sockets.adapter.rooms.get(gameCode).forEach((value) => room = value)
+        console.log("room: ", room);
 
         // console.log("rooms: ", room);
         let allUsers;
         if (room) {
             allUsers = server.sockets;
+            console.log("allUsers: ", allUsers);
         }
 
         let numClients = 0;
@@ -288,6 +290,22 @@ export class GameTwoService {
         this.state[gameCode].playerTwo.name = name;
         client.emit('init', 2);
         this.startGameInterval(server, this.state, gameCode);
+    }
+
+    handleSpectateGame(server: Server, client: Socket, gameCode: string) {
+        console.log("im here:", gameCode);
+
+        let room: string;
+        if (!gameCode)
+            return;
+        server.sockets.adapter.rooms.get(gameCode).forEach((value) => room = value)
+        setInterval(() => {
+            const state = this.state[gameCode];
+            // console.log("im here2: ", state);
+            // server.sockets.in(gameCode).emit("spectateState", JSON.stringify(state));
+            server.emit("spectateState", JSON.stringify(state));
+        }, 1000 / FRAMERATE);
+
     }
 
     emitGameState(server: Server, gameState: any, roomName: string) {

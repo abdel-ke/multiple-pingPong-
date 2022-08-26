@@ -72,6 +72,30 @@ const Home: NextPage = () => {
     init(2);
   }
 
+  const spectateGame = () => {
+    setinitialScreen(true);
+    socket.emit('spectateGame', gameCodeInput.toString());
+    init(0);
+  }
+
+  const handlSpectateState = (state: string) => {
+    if (canvasRef.current) {
+      if (ctx?.clearRect)
+      ctx?.clearRect(0, 0, canvas.width, canvas.height);
+      drawRect(ctx, 0, 0, canvas.width, canvas.height, "black");
+      if (!gameActive)
+      {
+        console.log("gameActive handlegame ret : ", gameActive);
+          return;
+      }
+
+      let StateTemp = JSON.parse(state);
+      console.log("3iiiiw");
+      requestAnimationFrame(() => paintGame(ctx, StateTemp));
+    }
+  }
+  socket.off('spectateState').on('spectateState', handlSpectateState);
+
   // draw rect
   const drawRect = (ctx: any, x: number, y: number, w: number, h: number, color: string) => {
     if (ctx) {
@@ -143,7 +167,6 @@ const Home: NextPage = () => {
     console.log("UseEffect gameActive: ", gameActive);
   }, [gameActive])
 
-  let oneTime = false;
   const handlGameState = (gameState: string) => {
     if (canvasRef.current) {
       if (ctx?.clearRect)
@@ -190,13 +213,6 @@ const Home: NextPage = () => {
       // alert('Your opponent disconnected');
       console.log('Your opponent disconnected');
     }
-    /* if (player !== playerNamber) {
-      // alert('You were disconnected from the server.');
-      console.log('You were disconnected from the server.');
-    } else {
-      // alert('Your opponent was disconnected.');
-      console.log('Your opponent was disconnected.');
-    } */
   }
   socket.off('playerDisconnected').on('playerDisconnected', handlePlayerDisconnected);
 
@@ -206,9 +222,6 @@ const Home: NextPage = () => {
     // setinitialScreen(true);
   }
   socket.off('gameCode').on('gameCode', handleGameCode);
-
-  // useEffect(() => {
-  // } , [gameCodeDisplay]);
 
   const handleUnknownGame = () => {
     // reset();
@@ -222,12 +235,11 @@ const Home: NextPage = () => {
   }
   socket.off('tooManyPlayers').on('tooManyPlayers', handletooManyPlayers);
 
-  // const reset = () => {
-  //   setGameCodeInput('');
-  //   setGameCodeDisplay('');
-  //   // setPlayerNamber(0)
-  //   setinitialScreen(false);
-  // }
+  const reset = () => {
+    setGameCodeInput('');
+    setGameCodeDisplay('');
+    setinitialScreen(false);
+  }
 
   return (
     <div>
@@ -235,8 +247,9 @@ const Home: NextPage = () => {
         {!initialScreen ? <div id='initialScreen'>
           <input type="text" placeholder='Write your name' id='name' onChange={(e) => { setNamePlayer(e.target.value) }}/>
           <input type="text" placeholder='Write the code' id='code' onChange={(e) => { setGameCodeInput(e.target.value) }} />
-          <button type='submit' id='joinGameBtn' onClick={joinGame}>join Game</button>
-          <button type='submit' id='newGameBtn' onClick={newGame}>new Game</button>
+          <button type='submit' onClick={joinGame}>join Game</button>
+          <button type='submit' onClick={newGame}>new Game</button>
+          <button type='submit' onClick={spectateGame}>spectating a game</button>
         </div>
           : <div id='gameScreen'>
             <h1>{namePlayer} your game code is: <span id='gameCodeDisplay'>{gameCodeDisplay}</span> </h1>

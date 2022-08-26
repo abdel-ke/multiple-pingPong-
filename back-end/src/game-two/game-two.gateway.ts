@@ -1,7 +1,6 @@
 import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket } from '@nestjs/websockets';
 import { GameTwoService } from './game-two.service';
 import { Server, Socket } from 'socket.io';
-import { ConsoleLogger } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
@@ -18,7 +17,7 @@ export class GameTwoGateway {
   }
 
   handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`, "    length: ", this.server.engine.clientsCount, "  server:   ", Object.keys(this.server.sockets).length);
+    console.log(`Client connected: ${client.id}`, " length: ", this.server.engine.clientsCount, "  server:   ", Object.keys(this.server.sockets).length);
     // this.gameTwoService.state = this.gameTwoService.createGameState();
     // client.on('keyDown', keyCode => {
     //   const ret = this.gameTwoService.handleKeyDown(keyCode);
@@ -56,6 +55,11 @@ export class GameTwoGateway {
   @SubscribeMessage('joinGame')
   handleJoinGame(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
     this.gameTwoService.handleJoinGame(this.server, client, data.gameCode, data.name);
+  }
+
+  @SubscribeMessage('spectateGame')
+  handleSpectateGame(@MessageBody() gameCode: string, @ConnectedSocket() client: Socket) {
+    this.gameTwoService.handleSpectateGame(this.server, client, gameCode);
   }
 
   @SubscribeMessage('canvaSize')
