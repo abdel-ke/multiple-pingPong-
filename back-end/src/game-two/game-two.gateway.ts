@@ -1,7 +1,7 @@
 import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket } from '@nestjs/websockets';
 import { GameTwoService } from './game-two.service';
 import { Server, Socket } from 'socket.io';
-import { canvasHeight, canvasWidth } from './constants';
+import { ConsoleLogger } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
@@ -18,6 +18,7 @@ export class GameTwoGateway {
   }
 
   handleConnection(client: Socket) {
+    console.log(`Client connected: ${client.id}`, "    length: ", this.server.engine.clientsCount, "  server:   ", Object.keys(this.server.sockets).length);
     // this.gameTwoService.state = this.gameTwoService.createGameState();
     // client.on('keyDown', keyCode => {
     //   const ret = this.gameTwoService.handleKeyDown(keyCode);
@@ -29,29 +30,36 @@ export class GameTwoGateway {
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
+    this.gameTwoService.gameActive = false;
+    const roomName = this.gameTwoService.clientRooms[client.id];
+    if (roomName)
+      if (client.id === this.gameTwoService.state[roomName].playerOne.id)
+        this.gameTwoService.playerDisconnected = 1;
+      else if (client.id === this.gameTwoService.state[roomName].playerTwo.id)
+        this.gameTwoService.playerDisconnected = 2;
   }
 
   @SubscribeMessage('keyDown')
   handleKeyDown(
     @MessageBody() keyCode: number,
     @ConnectedSocket() client: Socket
-    ) {
-      const ret = this.gameTwoService.handleKeyDown(keyCode);
-      this.gameTwoService.updatePlayer(client, this.gameTwoService.state, ret);
+  ) {
+    const ret = this.gameTwoService.handleKeyDown(keyCode);
+    this.gameTwoService.updatePlayer(client, this.gameTwoService.state, ret);
   }
 
   @SubscribeMessage('newGame')
-  handleNewGame(@ConnectedSocket() client: Socket){
-    this.gameTwoService.handleNewGame(client);
+  handleNewGame(@ConnectedSocket() client: Socket, @MessageBody() name: string) {
+    this.gameTwoService.handleNewGame(client, name);
   }
 
   @SubscribeMessage('joinGame')
-  handleJoinGame(@MessageBody() gameCode: string, @ConnectedSocket() client: Socket){
-    this.gameTwoService.handleJoinGame(this.server, client, gameCode);
+  handleJoinGame(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+    this.gameTwoService.handleJoinGame(this.server, client, data.gameCode, data.name);
   }
 
   @SubscribeMessage('canvaSize')
-  handleCanvaSize(@MessageBody() data: any){
+  handleCanvaSize(@MessageBody() data: any) {
     this.gameTwoService.handleCanvaSize(data.width, data.height)
   }
 }

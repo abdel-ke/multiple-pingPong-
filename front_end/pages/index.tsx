@@ -11,32 +11,33 @@ const Home: NextPage = () => {
   let ctx: any;
 
   const [gameCodeInput, setGameCodeInput] = useState('');
+  const [namePlayer, setNamePlayer] = useState('');
   const [gameCodeDisplay, setGameCodeDisplay] = useState('');
   const [initialScreen, setinitialScreen] = useState(false);
   const [gameActive, setGameActive] = useState(false);
   const [playerNamber, setPlayerNamber] = useState(0);
 
   useEffect(() => {
-    socket.connect();
-    socket.on('connection', () => { console.log("connected2"); })
-    socket.on('disconnect', () => { console.log('disconnected'); })
+    // socket.connect();
+    // socket.on('connection', () => { console.log("connected"); })
+    // socket.on('disconnect', () => { console.log('disconnected'); })
 
-    socket.on('init', handlInit);
-    socket.on('gameState', handlGameState);
+    // socket.on('init', handlInit);
+    // socket.on('gameState', handlGameState);
     // socket.on('gameOver', handleGameOver);
     // socket.on('gameCode', handleGameCode);
-    socket.on('unknownGame', handleUnknownGame);
-    socket.on('tooManyPlayers', handletooManyPlayers);
+    // socket.on('unknownGame', handleUnknownGame);
+    // socket.on('tooManyPlayers', handletooManyPlayers);
 
     return () => {
-      socket.off('connect');
-      socket.off('disconnect');
-      socket.off('init');
-      socket.off('gameState');
-      socket.off('gameOver');
-      socket.off('gameCode');
-      socket.off('unknownGame');
-      socket.off('tooManyPlayers');
+      // socket.off('connect');
+      // socket.off('disconnect');
+      // socket.off('init');
+      // socket.off('gameState');
+      // socket.off('gameOver');
+      // socket.off('gameCode');
+      // socket.off('unknownGame');
+      // socket.off('tooManyPlayers');
     };
   }, []);
 
@@ -61,13 +62,13 @@ const Home: NextPage = () => {
 
   const newGame = () => {
     setPlayerNamber(1);
-    socket.emit('newGame');
+    socket.emit('newGame', namePlayer);
     init(1);
   }
 
   const joinGame = () => {
     setPlayerNamber(2);
-    socket.emit('joinGame', gameCodeInput.toString());
+    socket.emit('joinGame', {gameCode: gameCodeInput.toString(), name: namePlayer});
     init(2);
   }
 
@@ -132,6 +133,7 @@ const Home: NextPage = () => {
     setinitialScreen(true);
     // init();
   }
+  socket.off('init').on('init', handlInit);
 
   useEffect(() => {
     console.log("UseEffect playerNamber: ", playerNamber);
@@ -144,35 +146,22 @@ const Home: NextPage = () => {
   let oneTime = false;
   const handlGameState = (gameState: string) => {
     if (canvasRef.current) {
-      if (!oneTime)
-      {
-        canvas = canvasRef.current;
-        ctx = canvas.getContext('2d');
-        oneTime = true;
-        console.log("canvas: ", canvas);
-      }
       if (ctx?.clearRect)
       ctx?.clearRect(0, 0, canvas.width, canvas.height);
       drawRect(ctx, 0, 0, canvas.width, canvas.height, "black");
       document.addEventListener("keydown", keydown);
-      // console.log("GameActive", gameActive);
-      // setGameActive(true);
-      // console.log("GameActive", gameActive);
-
-      // console.log("gameActive handlegame: ", gameActive);
-      // if (!gameActive)
-      // {
-      //   console.log("gameActive handlegame ret : ", gameActive);
-      //     return;
-      // }
+      if (!gameActive)
+      {
+        console.log("gameActive handlegame ret : ", gameActive);
+          return;
+      }
 
       let StateTemp = JSON.parse(gameState);
-      console.log("score: ", playerNamber);
-      // console.log(ctx);
-      // paintGame(ctx, StateTemp)
       requestAnimationFrame(() => paintGame(ctx, StateTemp));
     }
   }
+  socket.off('gameState').on('gameState', handlGameState);
+
   const handleGameOver = (data: any) => {
     // if (!gameActive) {
     //   return;
@@ -186,15 +175,30 @@ const Home: NextPage = () => {
     console.log("gameCodeDisplay: |", gameCodeDisplay, "|");
 
     if (data === playerNamber) {
-      alert('You Win!');
-      // console.log('You Win!');
+      // alert('You Win!');
+      console.log('You Win!');
     } else {
-      alert('You Lose :(');
-      // console.log('You Lose :(');
+      // alert('You Lose :(');
+      console.log('You Lose :(');
     }
   }
 
   socket.off('gameOver').on('gameOver', handleGameOver);
+  
+  const handlePlayerDisconnected = (player: number) => {
+    if (player !== playerNamber) {
+      // alert('Your opponent disconnected');
+      console.log('Your opponent disconnected');
+    }
+    /* if (player !== playerNamber) {
+      // alert('You were disconnected from the server.');
+      console.log('You were disconnected from the server.');
+    } else {
+      // alert('Your opponent was disconnected.');
+      console.log('Your opponent was disconnected.');
+    } */
+  }
+  socket.off('playerDisconnected').on('playerDisconnected', handlePlayerDisconnected);
 
   const handleGameCode = (gameCode: string) => {
     // console.log("gameCode", gameCode);
@@ -210,11 +214,13 @@ const Home: NextPage = () => {
     // reset();
     alert("Unknown Game code");
   }
+  socket.off('unknownGame').on('unknownGame', handleUnknownGame);
 
   const handletooManyPlayers = () => {
     // reset();
     alert("This Game is already in progress");
   }
+  socket.off('tooManyPlayers').on('tooManyPlayers', handletooManyPlayers);
 
   // const reset = () => {
   //   setGameCodeInput('');
@@ -227,13 +233,13 @@ const Home: NextPage = () => {
     <div>
       <div>
         {!initialScreen ? <div id='initialScreen'>
-          <input type="text" placeholder='Write your name' id='name' />
+          <input type="text" placeholder='Write your name' id='name' onChange={(e) => { setNamePlayer(e.target.value) }}/>
           <input type="text" placeholder='Write the code' id='code' onChange={(e) => { setGameCodeInput(e.target.value) }} />
           <button type='submit' id='joinGameBtn' onClick={joinGame}>join Game</button>
           <button type='submit' id='newGameBtn' onClick={newGame}>new Game</button>
         </div>
           : <div id='gameScreen'>
-            <h1>Your game code is: <span id='gameCodeDisplay'>{gameCodeDisplay}</span> </h1>
+            <h1>{namePlayer} your game code is: <span id='gameCodeDisplay'>{gameCodeDisplay}</span> </h1>
             <canvas ref={canvasRef} style={{ border: "1px solid #c3c3c3" }}></canvas>
           </div>}
       </div>

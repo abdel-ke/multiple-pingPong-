@@ -24,19 +24,27 @@ let GameTwoGateway = class GameTwoGateway {
         console.log('Websocket Server Started,Listening on Port:3000');
     }
     handleConnection(client) {
+        console.log(`Client connected: ${client.id}`, "    length: ", this.server.engine.clientsCount, "  server:   ", Object.keys(this.server.sockets).length);
     }
     handleDisconnect(client) {
         console.log(`Client disconnected: ${client.id}`);
+        this.gameTwoService.gameActive = false;
+        const roomName = this.gameTwoService.clientRooms[client.id];
+        if (roomName)
+            if (client.id === this.gameTwoService.state[roomName].playerOne.id)
+                this.gameTwoService.playerDisconnected = 1;
+            else if (client.id === this.gameTwoService.state[roomName].playerTwo.id)
+                this.gameTwoService.playerDisconnected = 2;
     }
     handleKeyDown(keyCode, client) {
         const ret = this.gameTwoService.handleKeyDown(keyCode);
         this.gameTwoService.updatePlayer(client, this.gameTwoService.state, ret);
     }
-    handleNewGame(client) {
-        this.gameTwoService.handleNewGame(client);
+    handleNewGame(client, name) {
+        this.gameTwoService.handleNewGame(client, name);
     }
-    handleJoinGame(gameCode, client) {
-        this.gameTwoService.handleJoinGame(this.server, client, gameCode);
+    handleJoinGame(data, client) {
+        this.gameTwoService.handleJoinGame(this.server, client, data.gameCode, data.name);
     }
     handleCanvaSize(data) {
         this.gameTwoService.handleCanvaSize(data.width, data.height);
@@ -57,8 +65,9 @@ __decorate([
 __decorate([
     (0, websockets_1.SubscribeMessage)('newGame'),
     __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [socket_io_1.Socket]),
+    __metadata("design:paramtypes", [socket_io_1.Socket, String]),
     __metadata("design:returntype", void 0)
 ], GameTwoGateway.prototype, "handleNewGame", null);
 __decorate([
@@ -66,7 +75,7 @@ __decorate([
     __param(0, (0, websockets_1.MessageBody)()),
     __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, socket_io_1.Socket]),
+    __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
     __metadata("design:returntype", void 0)
 ], GameTwoGateway.prototype, "handleJoinGame", null);
 __decorate([

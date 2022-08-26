@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { stringify } from 'querystring';
 import { Server, Socket } from 'socket.io';
-import { threadId } from 'worker_threads';
+import { json } from 'stream/consumers';
 import { FRAMERATE } from './constants';
-// import { this.canvasHeight, this.canvasWidth } from './constants';
-
 
 @Injectable()
 export class GameTwoService {
@@ -14,17 +11,17 @@ export class GameTwoService {
     gameActive: boolean = false;
     canvasWidth: number;
     canvasHeight: number;
+    playerDisconnected: number = 0;
 
-    handleCanvaSize(width: number, height: number){
+    handleCanvaSize(width: number, height: number) {
         this.canvasWidth = width;
         this.canvasHeight = height;
-        // console.log("this.canvasWidth: ", this.canvasWidth);
-        // console.log("this.canvasHeight", this.canvasHeight);        
     }
     createGameState() {
         return {
             playerOne: {
                 id: 'playerOne',
+                name: '',
                 x: 0,
                 y: (this.canvasWidth - 100) / 2,
                 width: 10,
@@ -34,6 +31,7 @@ export class GameTwoService {
             },
             playerTwo: {
                 id: 'playerTwo',
+                name: '',
                 x: this.canvasWidth - 10,
                 y: (this.canvasHeight - 100) / 2,
                 width: 10,
@@ -103,7 +101,7 @@ export class GameTwoService {
 
         // the ball has a velocity
         ball.x += ball.velocityX;
-        ball.y += ball.velocityY; 
+        ball.y += ball.velocityY;
         // computer plays for itself, and we must be able to beat it
 
         // sample AI to control the com paddle
@@ -176,10 +174,8 @@ export class GameTwoService {
 
     updatePlayer(client: Socket, state: any, ret: number) {
         const roomName = this.clientRooms[client.id];
-        // console.log("roomName: ", roomName, "  gameActive: ", this.gameActive);
         if (!roomName || !this.gameActive)
-        return;
-        // console.log("roomName: ", roomName, "  gameActive: ", this.gameActive);
+            return;
         if (this.state[roomName].playerOne.id === client.id)
             this.updatePlayerOne(state[roomName], ret);
         else
@@ -216,28 +212,38 @@ export class GameTwoService {
         // playerOne win return 1 && playerTwo win return 2
         const interval = setInterval(() => {
             const winner = this.gameloop(state[roomName]);
-            if (!winner) {
-                // clinet.emit('gameState', JSON.stringify(state));
-                this.emitGameState(server, state[roomName], roomName);
+            if (this.gameActive) {
+                if (!winner) {
+                    // clinet.emit('gameState', JSON.stringify(state));
+                    this.emitGameState(server, state[roomName], roomName);
+                }
+                else {
+                    const nameOne = this.state[roomName].playerOne.name;
+                    const nameTwo = this.state[roomName].playerTwo.name;
+                    console.log(`game over ${nameOne} vs ${nameTwo}`);
+                    this.emitGameOver(server, roomName, winner);
+                    this.state[roomName] = null;
+                    clearInterval(interval);
+                    this.gameActive = false;
+                }
             }
             else {
-                console.log('game over');
-                this.emitGameOver(server, roomName, winner);
-                state[roomName] = null;
+                console.log(`player ${this.playerDisconnected} was disconnected`);
+                this.emitPlayerDesconnected(server, roomName, this.playerDisconnected);
                 clearInterval(interval);
-                this.gameActive = false;
             }
         }, 1000 / FRAMERATE);
     }
 
-    handleNewGame(client: Socket) {
+    handleNewGame(client: Socket, name: string) {
         let roomName = Math.floor(Math.random() * 1000000);
         this.clientRooms[client.id] = roomName;
         client.emit('gameCode', roomName);
-        
+
         this.state[roomName] = this.createGameState();
         this.state[roomName].playerOne.id = client.id;
-        
+        this.state[roomName].playerOne.name = name;
+
         client.join(roomName.toString());
         client.emit('init', 1);
         // client.number = 1;
@@ -245,7 +251,7 @@ export class GameTwoService {
     }
 
     //client.on('joinGame', handleJoinGame);
-    handleJoinGame(server: Server, client: Socket, gameCode: string) {
+    handleJoinGame(server: Server, client: Socket, gameCode: string, name: string) {
         let room: string;
         if (!gameCode)
             return;
@@ -260,12 +266,13 @@ export class GameTwoService {
 
         let numClients = 0;
         if (allUsers) {
-            
-            numClients = Object.keys(allUsers).length;
+
+            // numClients = Object.keys(allUsers).length;
+            numClients = server.engine.clientsCount;
             console.log("length: ", numClients);
         }
 
-        if (numClients === 0){
+        if (numClients === 0) {
             client.emit('unknownGame');
             return;
         }
@@ -273,11 +280,12 @@ export class GameTwoService {
         //     client.emit('tooManyPlayers');
         //     return;
         // }
-        
+
         this.clientRooms[client.id] = gameCode;
 
         client.join(gameCode);
         this.state[gameCode].playerTwo.id = client.id;
+        this.state[gameCode].playerTwo.name = name;
         client.emit('init', 2);
         this.startGameInterval(server, this.state, gameCode);
     }
@@ -286,7 +294,11 @@ export class GameTwoService {
         server.sockets.in(roomName).emit("gameState", JSON.stringify(gameState))
     }
 
-    emitGameOver(server: Server, roomName: string, winner: number) {
+    emitGameOver(server: Server, roomName: string, winner: any) {
         server.in(roomName).emit('gameOver', JSON.stringify(winner));
+    }
+
+    emitPlayerDesconnected(server: Server, roomName: string, winner: number) {
+        server.in(roomName).emit('playerDisconnected', JSON.stringify(winner));
     }
 }

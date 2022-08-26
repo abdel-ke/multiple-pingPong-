@@ -17,6 +17,7 @@ let GameTwoService = class GameTwoService {
         this.state = {};
         this.clientRooms = {};
         this.gameActive = false;
+        this.playerDisconnected = 0;
     }
     handleCanvaSize(width, height) {
         this.canvasWidth = width;
@@ -26,6 +27,7 @@ let GameTwoService = class GameTwoService {
         return {
             playerOne: {
                 id: 'playerOne',
+                name: '',
                 x: 0,
                 y: (this.canvasWidth - 100) / 2,
                 width: 10,
@@ -35,6 +37,7 @@ let GameTwoService = class GameTwoService {
             },
             playerTwo: {
                 id: 'playerTwo',
+                name: '',
                 x: this.canvasWidth - 10,
                 y: (this.canvasHeight - 100) / 2,
                 width: 10,
@@ -180,28 +183,38 @@ let GameTwoService = class GameTwoService {
     startGameInterval(server, state, roomName) {
         const interval = setInterval(() => {
             const winner = this.gameloop(state[roomName]);
-            if (!winner) {
-                this.emitGameState(server, state[roomName], roomName);
+            if (this.gameActive) {
+                if (!winner) {
+                    this.emitGameState(server, state[roomName], roomName);
+                }
+                else {
+                    const nameOne = this.state[roomName].playerOne.name;
+                    const nameTwo = this.state[roomName].playerTwo.name;
+                    console.log(`game over ${nameOne} vs ${nameTwo}`);
+                    this.emitGameOver(server, roomName, winner);
+                    this.state[roomName] = null;
+                    clearInterval(interval);
+                    this.gameActive = false;
+                }
             }
             else {
-                console.log('game over');
-                this.emitGameOver(server, roomName, winner);
-                state[roomName] = null;
+                console.log(`player ${this.playerDisconnected} was disconnected`);
+                this.emitPlayerDesconnected(server, roomName, this.playerDisconnected);
                 clearInterval(interval);
-                this.gameActive = false;
             }
         }, 1000 / constants_1.FRAMERATE);
     }
-    handleNewGame(client) {
+    handleNewGame(client, name) {
         let roomName = Math.floor(Math.random() * 1000000);
         this.clientRooms[client.id] = roomName;
         client.emit('gameCode', roomName);
         this.state[roomName] = this.createGameState();
         this.state[roomName].playerOne.id = client.id;
+        this.state[roomName].playerOne.name = name;
         client.join(roomName.toString());
         client.emit('init', 1);
     }
-    handleJoinGame(server, client, gameCode) {
+    handleJoinGame(server, client, gameCode, name) {
         let room;
         if (!gameCode)
             return;
@@ -213,7 +226,7 @@ let GameTwoService = class GameTwoService {
         }
         let numClients = 0;
         if (allUsers) {
-            numClients = Object.keys(allUsers).length;
+            numClients = server.engine.clientsCount;
             console.log("length: ", numClients);
         }
         if (numClients === 0) {
@@ -223,6 +236,7 @@ let GameTwoService = class GameTwoService {
         this.clientRooms[client.id] = gameCode;
         client.join(gameCode);
         this.state[gameCode].playerTwo.id = client.id;
+        this.state[gameCode].playerTwo.name = name;
         client.emit('init', 2);
         this.startGameInterval(server, this.state, gameCode);
     }
@@ -231,6 +245,9 @@ let GameTwoService = class GameTwoService {
     }
     emitGameOver(server, roomName, winner) {
         server.in(roomName).emit('gameOver', JSON.stringify(winner));
+    }
+    emitPlayerDesconnected(server, roomName, winner) {
+        server.in(roomName).emit('playerDisconnected', JSON.stringify(winner));
     }
 };
 GameTwoService = __decorate([
