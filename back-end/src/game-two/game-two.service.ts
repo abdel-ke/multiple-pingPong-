@@ -8,6 +8,7 @@ export class GameTwoService {
     constructor() { }
     state: any = {};
     clientRooms: any = {};
+    clientSpectating: any = {};
     gameActive: boolean = false;
     canvasWidth: number;
     canvasHeight: number;
@@ -17,6 +18,7 @@ export class GameTwoService {
         this.canvasWidth = width;
         this.canvasHeight = height;
     }
+
     createGameState() {
         return {
             playerOne: {
@@ -83,9 +85,6 @@ export class GameTwoService {
     gameloop(state: any) {
         if (!state)
             return;
-        // if (!this.count++)
-        // console.log("canva: ", this.canvasHeight, "=== ", this.canvasWidth);
-
         const playerOne = state.playerOne;
         const playerTwo = state.playerTwo;
         const ball = state.ball;
@@ -218,9 +217,6 @@ export class GameTwoService {
                     this.emitGameState(server, state[roomName], roomName);
                 }
                 else {
-                    const nameOne = this.state[roomName].playerOne.name;
-                    const nameTwo = this.state[roomName].playerTwo.name;
-                    console.log(`game over ${nameOne} vs ${nameTwo}`);
                     this.emitGameOver(server, roomName, winner);
                     this.state[roomName] = null;
                     clearInterval(interval);
@@ -246,8 +242,6 @@ export class GameTwoService {
 
         client.join(roomName.toString());
         client.emit('init', 1);
-        // client.number = 1;
-        // console.log("roomName: ", roomName);
     }
 
     //client.on('joinGame', handleJoinGame);
@@ -257,18 +251,13 @@ export class GameTwoService {
             return;
         this.gameActive = true;
         server.sockets.adapter.rooms.get(gameCode).forEach((value) => room = value)
-        console.log("room: ", room);
-
-        // console.log("rooms: ", room);
         let allUsers;
         if (room) {
             allUsers = server.sockets;
-            console.log("allUsers: ", allUsers);
         }
 
         let numClients = 0;
         if (allUsers) {
-
             // numClients = Object.keys(allUsers).length;
             numClients = server.engine.clientsCount;
             console.log("length: ", numClients);
@@ -293,16 +282,13 @@ export class GameTwoService {
     }
 
     handleSpectateGame(server: Server, client: Socket, gameCode: string) {
-        console.log("im here:", gameCode);
-
         let room: string;
         if (!gameCode)
             return;
         server.sockets.adapter.rooms.get(gameCode).forEach((value) => room = value)
+        this.clientSpectating[client.id] = gameCode;
         setInterval(() => {
             const state = this.state[gameCode];
-            // console.log("im here2: ", state);
-            // server.sockets.in(gameCode).emit("spectateState", JSON.stringify(state));
             server.emit("spectateState", JSON.stringify(state));
         }, 1000 / FRAMERATE);
 

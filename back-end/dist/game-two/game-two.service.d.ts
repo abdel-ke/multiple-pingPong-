@@ -3,6 +3,7 @@ export declare class GameTwoService {
     constructor();
     state: any;
     clientRooms: any;
+    clientSpectating: any;
     gameActive: boolean;
     canvasWidth: number;
     canvasHeight: number;

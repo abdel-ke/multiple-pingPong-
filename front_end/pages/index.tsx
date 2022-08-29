@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
 import styles from '../styles/Home.module.css'
-import { useEffect, useState, useRef, useLayoutEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client'
 
 const socket = io('http://localhost:3001/')
@@ -16,6 +16,8 @@ const Home: NextPage = () => {
   const [initialScreen, setinitialScreen] = useState(false);
   const [gameActive, setGameActive] = useState(false);
   const [playerNamber, setPlayerNamber] = useState(0);
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
 
   useEffect(() => {
     // socket.connect();
@@ -46,19 +48,26 @@ const Home: NextPage = () => {
     setPlayerNamber(player)
   }
 
-  useEffect(() => {
-    console.log("define canvas");
-    if (canvasRef.current) {
-      console.log("inside canvas: ", playerNamber);
+  if (typeof window !== "undefined") {
+    window.onresize = () => {
+      console.log("innerWidth: ", window.innerWidth, " ineerHeight: ", window.innerHeight);
+      canvas.width = window.innerWidth * 0.5;
+      canvas.height = window.innerHeight * 0.5;
+      // setWidth(window.innerWidth * 0.2);
+      // setHeight(window.innerHeight * 0.2);
+      socket.emit('canvaSize', { width: canvas.width, height: canvas.height });
+    }
+  }
 
+  useEffect(() => {
+    if (canvasRef.current) {
       canvas = canvasRef.current;
       ctx = canvas.getContext('2d');
-      canvas.width = 600;
-      canvas.height = 400;
+      canvas.width = window.innerWidth * 0.5;
+      canvas.height = window.innerHeight * 0.5;
       socket.emit('canvaSize', { width: canvas.width, height: canvas.height });
-      console.log("canvas.width: ", canvas.width, "---- canvas.height: ", canvas.height);
     }
-  }, [!initialScreen])
+  }, [!initialScreen]);
 
   const newGame = () => {
     setPlayerNamber(1);
@@ -68,7 +77,7 @@ const Home: NextPage = () => {
 
   const joinGame = () => {
     setPlayerNamber(2);
-    socket.emit('joinGame', {gameCode: gameCodeInput.toString(), name: namePlayer});
+    socket.emit('joinGame', { gameCode: gameCodeInput.toString(), name: namePlayer });
     init(2);
   }
 
@@ -81,16 +90,14 @@ const Home: NextPage = () => {
   const handlSpectateState = (state: string) => {
     if (canvasRef.current) {
       if (ctx?.clearRect)
-      ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
       drawRect(ctx, 0, 0, canvas.width, canvas.height, "black");
-      if (!gameActive)
-      {
+      if (!gameActive) {
         console.log("gameActive handlegame ret : ", gameActive);
-          return;
+        return;
       }
 
       let StateTemp = JSON.parse(state);
-      console.log("3iiiiw");
       requestAnimationFrame(() => paintGame(ctx, StateTemp));
     }
   }
@@ -99,6 +106,10 @@ const Home: NextPage = () => {
   // draw rect
   const drawRect = (ctx: any, x: number, y: number, w: number, h: number, color: string) => {
     if (ctx) {
+      // let width = canvas.width * 0.2;
+      // let height = canvas.height * 0.2;
+      // let xpos = canvas.width / 2 - width / 2;
+      // let ypos = canvas.height / 2 - height / 2;
       ctx.fillStyle = color;
       ctx.fillRect(x, y, w, h);
     }
@@ -131,7 +142,6 @@ const Home: NextPage = () => {
 
   // PAGE GAME
   const keydown = (e: any) => {
-    // console.log(e.keyCode);
     socket.emit('keyDown', e.keyCode);
   }
 
@@ -170,13 +180,12 @@ const Home: NextPage = () => {
   const handlGameState = (gameState: string) => {
     if (canvasRef.current) {
       if (ctx?.clearRect)
-      ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
       drawRect(ctx, 0, 0, canvas.width, canvas.height, "black");
       document.addEventListener("keydown", keydown);
-      if (!gameActive)
-      {
+      if (!gameActive) {
         console.log("gameActive handlegame ret : ", gameActive);
-          return;
+        return;
       }
 
       let StateTemp = JSON.parse(gameState);
@@ -186,17 +195,11 @@ const Home: NextPage = () => {
   socket.off('gameState').on('gameState', handlGameState);
 
   const handleGameOver = (data: any) => {
-    // if (!gameActive) {
-    //   return;
-    // }
-
+    if (!gameActive) {
+      return;
+    }
     data = JSON.parse(data);
-
     setGameActive(false);
-    console.log("data.winner: ", data);
-    console.log("playerNamber: ", playerNamber);
-    console.log("gameCodeDisplay: |", gameCodeDisplay, "|");
-
     if (data === playerNamber) {
       // alert('You Win!');
       console.log('You Win!');
@@ -207,17 +210,16 @@ const Home: NextPage = () => {
   }
 
   socket.off('gameOver').on('gameOver', handleGameOver);
-  
+
   const handlePlayerDisconnected = (player: number) => {
     if (player !== playerNamber) {
       // alert('Your opponent disconnected');
-      console.log('Your opponent disconnected');
+      console.log('Your opponent disconnected. You win!');
     }
   }
   socket.off('playerDisconnected').on('playerDisconnected', handlePlayerDisconnected);
 
   const handleGameCode = (gameCode: string) => {
-    // console.log("gameCode", gameCode);
     setGameCodeDisplay(gameCode);
     // setinitialScreen(true);
   }
@@ -245,7 +247,7 @@ const Home: NextPage = () => {
     <div>
       <div>
         {!initialScreen ? <div id='initialScreen'>
-          <input type="text" placeholder='Write your name' id='name' onChange={(e) => { setNamePlayer(e.target.value) }}/>
+          <input type="text" placeholder='Write your name' id='name' onChange={(e) => { setNamePlayer(e.target.value) }} />
           <input type="text" placeholder='Write the code' id='code' onChange={(e) => { setGameCodeInput(e.target.value) }} />
           <button type='submit' onClick={joinGame}>join Game</button>
           <button type='submit' onClick={newGame}>new Game</button>

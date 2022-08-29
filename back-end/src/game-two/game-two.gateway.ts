@@ -29,13 +29,14 @@ export class GameTwoGateway {
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-    this.gameTwoService.gameActive = false;
     const roomName = this.gameTwoService.clientRooms[client.id];
-    if (roomName)
+    if (roomName) {
+      this.gameTwoService.gameActive = false;
       if (client.id === this.gameTwoService.state[roomName].playerOne.id)
         this.gameTwoService.playerDisconnected = 1;
       else if (client.id === this.gameTwoService.state[roomName].playerTwo.id)
         this.gameTwoService.playerDisconnected = 2;
+    }
   }
 
   @SubscribeMessage('keyDown')

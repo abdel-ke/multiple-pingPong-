@@ -16,6 +16,7 @@ let GameTwoService = class GameTwoService {
     constructor() {
         this.state = {};
         this.clientRooms = {};
+        this.clientSpectating = {};
         this.gameActive = false;
         this.playerDisconnected = 0;
     }
@@ -188,9 +189,6 @@ let GameTwoService = class GameTwoService {
                     this.emitGameState(server, state[roomName], roomName);
                 }
                 else {
-                    const nameOne = this.state[roomName].playerOne.name;
-                    const nameTwo = this.state[roomName].playerTwo.name;
-                    console.log(`game over ${nameOne} vs ${nameTwo}`);
                     this.emitGameOver(server, roomName, winner);
                     this.state[roomName] = null;
                     clearInterval(interval);
@@ -220,11 +218,9 @@ let GameTwoService = class GameTwoService {
             return;
         this.gameActive = true;
         server.sockets.adapter.rooms.get(gameCode).forEach((value) => room = value);
-        console.log("room: ", room);
         let allUsers;
         if (room) {
             allUsers = server.sockets;
-            console.log("allUsers: ", allUsers);
         }
         let numClients = 0;
         if (allUsers) {
@@ -243,11 +239,11 @@ let GameTwoService = class GameTwoService {
         this.startGameInterval(server, this.state, gameCode);
     }
     handleSpectateGame(server, client, gameCode) {
-        console.log("im here:", gameCode);
         let room;
         if (!gameCode)
             return;
         server.sockets.adapter.rooms.get(gameCode).forEach((value) => room = value);
+        this.clientSpectating[client.id] = gameCode;
         setInterval(() => {
             const state = this.state[gameCode];
             server.emit("spectateState", JSON.stringify(state));
