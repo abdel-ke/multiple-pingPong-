@@ -18,11 +18,9 @@ let GameTwoService = class GameTwoService {
         this.clientRooms = {};
         this.clientSpectating = {};
         this.gameActive = false;
+        this.canvasWidth = 600;
+        this.canvasHeight = this.canvasWidth / 2;
         this.playerDisconnected = 0;
-    }
-    handleCanvaSize(width, height) {
-        this.canvasWidth = width;
-        this.canvasHeight = height;
     }
     createGameState() {
         return {
@@ -30,7 +28,7 @@ let GameTwoService = class GameTwoService {
                 id: 'playerOne',
                 name: '',
                 x: 0,
-                y: (this.canvasWidth - 100) / 2,
+                y: (this.canvasHeight - 100) / 2,
                 width: 10,
                 height: 100,
                 color: 'white',
@@ -49,7 +47,7 @@ let GameTwoService = class GameTwoService {
             ball: {
                 x: this.canvasWidth / 2,
                 y: this.canvasHeight / 2,
-                radius: 10,
+                radius: this.canvasHeight * 0.02,
                 speed: 7,
                 velocityX: 7,
                 velocityY: 7,
@@ -108,7 +106,7 @@ let GameTwoService = class GameTwoService {
             ball.velocityY = ball.speed * Math.sin(angleRad);
             ball.speed += 0.1;
         }
-        if (playerOne.score == 200) {
+        if (playerOne.score == 10) {
             playerOne.score = 0;
             playerTwo.score = 0;
             ball.x = this.canvasWidth / 2;
@@ -117,7 +115,7 @@ let GameTwoService = class GameTwoService {
             ball.velocityY = 7;
             return 1;
         }
-        if (playerTwo.score == 200) {
+        if (playerTwo.score == 10) {
             playerOne.score = 0;
             playerTwo.score = 0;
             ball.x = this.canvasWidth / 2;

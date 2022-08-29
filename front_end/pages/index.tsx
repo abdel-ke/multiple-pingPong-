@@ -16,8 +16,6 @@ const Home: NextPage = () => {
   const [initialScreen, setinitialScreen] = useState(false);
   const [gameActive, setGameActive] = useState(false);
   const [playerNamber, setPlayerNamber] = useState(0);
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
 
   useEffect(() => {
     // socket.connect();
@@ -50,12 +48,31 @@ const Home: NextPage = () => {
 
   if (typeof window !== "undefined") {
     window.onresize = () => {
-      console.log("innerWidth: ", window.innerWidth, " ineerHeight: ", window.innerHeight);
-      canvas.width = window.innerWidth * 0.5;
-      canvas.height = window.innerHeight * 0.5;
+      if (canvasRef.current) {
+        if (window.innerWidth > 1300) {
+          canvas.width = 600;
+          canvas.height = canvas.width / 2;
+        }
+        else if (window.innerWidth < 1300 && window.innerWidth > 600) {
+          canvas.width = 500;
+          canvas.height = canvas.width / 2;
+        }
+        else if (window.innerWidth < 600) {
+          canvas.width = 300;
+          canvas.height = canvas.width / 2;
+        }
+      }
+
+
+
+
+      // console.log("innerWidth: ", window.innerWidth, " ineerHeight: ", window.innerHeight);
+      // canvas.width = window.innerWidth * 0.5;
+      // canvas.height = (window.innerWidth * 0.5) / 2;
       // setWidth(window.innerWidth * 0.2);
       // setHeight(window.innerHeight * 0.2);
-      socket.emit('canvaSize', { width: canvas.width, height: canvas.height });
+
+      // socket.emit('canvaSize', { width: canvas.width, height: canvas.height });
     }
   }
 
@@ -63,8 +80,18 @@ const Home: NextPage = () => {
     if (canvasRef.current) {
       canvas = canvasRef.current;
       ctx = canvas.getContext('2d');
-      canvas.width = window.innerWidth * 0.5;
-      canvas.height = window.innerHeight * 0.5;
+      if (window.innerWidth > 1300) {
+        canvas.width = 600;
+        canvas.height = canvas.width / 2;
+      }
+      else if (window.innerWidth < 1300 && window.innerWidth > 600) {
+        canvas.width = 500;
+        canvas.height = canvas.width / 2;
+      }
+      else if (window.innerWidth < 600) {
+        canvas.width = 300;
+        canvas.height = canvas.width / 2;
+      }
       socket.emit('canvaSize', { width: canvas.width, height: canvas.height });
     }
   }, [!initialScreen]);
@@ -132,10 +159,10 @@ const Home: NextPage = () => {
   }
 
   // // draw Text
-  const drawText = (ctx: any, text: string, x: number, y: number, color: string) => {
+  const drawText = (ctx: any, text: string, x: number, y: number, color: string, percentage: number) => {
     if (ctx) {
       ctx.fillStyle = color;
-      ctx.font = '45px fantasy';
+      ctx.font = `${45 / percentage}px fantasy`;
       ctx.fillText(text, x, y);
     }
   }
@@ -146,20 +173,34 @@ const Home: NextPage = () => {
   }
 
   const paintGame = (ctx: any, gameState: any) => {
+    let percentage = 600 / canvas.width;
     const ball = gameState.ball;
+    ball.r = ball.r / percentage;
+    ball.x = ball.x / percentage;
+    ball.y = ball.y / percentage;
+
     drawRect(ctx, 0, 0, canvas.width, canvas.height, "black");
     drawNet(ctx);
     drawCircle(ctx, ball.x, ball.y, ball.radius, ball.color);
-    paintPlayers(ctx, gameState);
+    paintPlayers(ctx, gameState, percentage);
   }
 
-  const paintPlayers = (ctx: any, gameState: any) => {
+  const paintPlayers = (ctx: any, gameState: any, percentage: number) => {
     const pOne = gameState.playerOne;
     const pTwo = gameState.playerTwo;
+    pOne.x = pOne.x / percentage;
+    pOne.y = pOne.y / percentage;
+    pOne.width = pOne.width / percentage;
+    pOne.height = pOne.height / percentage;
+    pTwo.x = pTwo.x / percentage;
+    pTwo.y = pTwo.y / percentage;
+    pTwo.width = pTwo.width / percentage;
+    pTwo.height = pTwo.height / percentage;
+
     drawRect(ctx, pOne.x, pOne.y, pOne.width, pOne.height, pOne.color);
     drawRect(ctx, pTwo.x, pTwo.y, pTwo.width, pTwo.height, pTwo.color);
-    drawText(ctx, pOne.score.toString(), canvas.width / 4, canvas.height / 5, "white");
-    drawText(ctx, pTwo.score.toString(), (canvas.width / 4) * 3, canvas.height / 5, "white");
+    drawText(ctx, pOne.score.toString(), (600 / 4) / percentage, (300 / 5) / percentage, "white", percentage);
+    drawText(ctx, pTwo.score.toString(), ((600 / 4) * 3) / percentage, (300 / 5) / percentage, "white", percentage);
   }
 
   const handlInit = (number: number) => {
@@ -169,13 +210,13 @@ const Home: NextPage = () => {
   }
   socket.off('init').on('init', handlInit);
 
-  useEffect(() => {
-    console.log("UseEffect playerNamber: ", playerNamber);
-  }, [playerNamber])
+  // useEffect(() => {
+  //   console.log("UseEffect playerNamber: ", playerNamber);
+  // }, [playerNamber])
 
-  useEffect(() => {
-    console.log("UseEffect gameActive: ", gameActive);
-  }, [gameActive])
+  // useEffect(() => {
+  //   console.log("UseEffect gameActive: ", gameActive);
+  // }, [gameActive])
 
   const handlGameState = (gameState: string) => {
     if (canvasRef.current) {
@@ -255,7 +296,7 @@ const Home: NextPage = () => {
         </div>
           : <div id='gameScreen'>
             <h1>{namePlayer} your game code is: <span id='gameCodeDisplay'>{gameCodeDisplay}</span> </h1>
-            <canvas ref={canvasRef} style={{ border: "1px solid #c3c3c3" }}></canvas>
+            <div style={{ display: "flex", justifyContent: "center" }} ><canvas ref={canvasRef} style={{ border: "1px solid #c3c3c3" }}></canvas></div>
           </div>}
       </div>
     </div>

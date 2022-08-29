@@ -8,7 +8,6 @@ export declare class GameTwoService {
     canvasWidth: number;
     canvasHeight: number;
     playerDisconnected: number;
-    handleCanvaSize(width: number, height: number): void;
     createGameState(): {
         playerOne: {
             id: string;

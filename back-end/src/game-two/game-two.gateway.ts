@@ -63,8 +63,8 @@ export class GameTwoGateway {
     this.gameTwoService.handleSpectateGame(this.server, client, gameCode);
   }
 
-  @SubscribeMessage('canvaSize')
-  handleCanvaSize(@MessageBody() data: any) {
-    this.gameTwoService.handleCanvaSize(data.width, data.height)
-  }
+  // @SubscribeMessage('canvaSize')
+  // handleCanvaSize(@MessageBody() data: any) {
+  //   this.gameTwoService.handleCanvaSize(data.width, data.height)
+  // }
 }

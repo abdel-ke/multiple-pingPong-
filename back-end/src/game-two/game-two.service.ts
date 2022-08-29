@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { json } from 'stream/consumers';
 import { FRAMERATE } from './constants';
 
 @Injectable()
@@ -10,14 +9,14 @@ export class GameTwoService {
     clientRooms: any = {};
     clientSpectating: any = {};
     gameActive: boolean = false;
-    canvasWidth: number;
-    canvasHeight: number;
+    canvasWidth: number = 600;
+    canvasHeight: number = this.canvasWidth / 2;
     playerDisconnected: number = 0;
 
-    handleCanvaSize(width: number, height: number) {
-        this.canvasWidth = width;
-        this.canvasHeight = height;
-    }
+    // handleCanvaSize(width: number, height: number) {
+    //     this.canvasWidth = width;
+    //     this.canvasHeight = height;
+    // }
 
     createGameState() {
         return {
@@ -25,7 +24,7 @@ export class GameTwoService {
                 id: 'playerOne',
                 name: '',
                 x: 0,
-                y: (this.canvasWidth - 100) / 2,
+                y: (this.canvasHeight - 100) / 2,
                 width: 10,
                 height: 100,
                 color: 'white',
@@ -44,7 +43,7 @@ export class GameTwoService {
             ball: {
                 x: this.canvasWidth / 2,
                 y: this.canvasHeight / 2,
-                radius: 10,
+                radius: this.canvasHeight * 0.02,
                 speed: 7,
                 velocityX: 7,
                 velocityY: 7,
@@ -131,7 +130,7 @@ export class GameTwoService {
         }
 
         // playerOne win
-        if (playerOne.score == 200) {
+        if (playerOne.score == 10) {
             // this.gameActive = false;
             playerOne.score = 0;
             playerTwo.score = 0;
@@ -142,7 +141,7 @@ export class GameTwoService {
             return 1;
         }
         // playerTwo win
-        if (playerTwo.score == 200) {
+        if (playerTwo.score == 10) {
             // this.gameActive = false;
             playerOne.score = 0;
             playerTwo.score = 0;

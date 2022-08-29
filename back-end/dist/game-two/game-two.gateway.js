@@ -50,9 +50,6 @@ let GameTwoGateway = class GameTwoGateway {
     handleSpectateGame(gameCode, client) {
         this.gameTwoService.handleSpectateGame(this.server, client, gameCode);
     }
-    handleCanvaSize(data) {
-        this.gameTwoService.handleCanvaSize(data.width, data.height);
-    }
 };
 __decorate([
     (0, websockets_1.WebSocketServer)(),
@@ -90,13 +87,6 @@ __decorate([
     __metadata("design:paramtypes", [String, socket_io_1.Socket]),
     __metadata("design:returntype", void 0)
 ], GameTwoGateway.prototype, "handleSpectateGame", null);
-__decorate([
-    (0, websockets_1.SubscribeMessage)('canvaSize'),
-    __param(0, (0, websockets_1.MessageBody)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], GameTwoGateway.prototype, "handleCanvaSize", null);
 GameTwoGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {

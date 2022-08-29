@@ -11,5 +11,4 @@ export declare class GameTwoGateway {
     handleNewGame(client: Socket, name: string): void;
     handleJoinGame(data: any, client: Socket): void;
     handleSpectateGame(gameCode: string, client: Socket): void;
-    handleCanvaSize(data: any): void;
 }
