@@ -70,7 +70,7 @@ let GameTwoService = class GameTwoService {
         b.bottom = b.y + b.radius;
         b.left = b.x - b.radius;
         b.right = b.x + b.radius;
-        return (b.right > p.left && b.bottom > p.top && b.left < p.right && b.top < p.bottom);
+        return (b.right >= p.left && b.bottom >= p.top && b.left <= p.right && b.top <= p.bottom);
     }
     resetBall(state) {
         state.ball.x = this.canvasWidth / 2;

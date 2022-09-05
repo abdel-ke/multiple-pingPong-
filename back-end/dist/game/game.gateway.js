@@ -16,28 +16,39 @@ exports.GameGateway = void 0;
 const websockets_1 = require("@nestjs/websockets");
 const game_service_1 = require("./game.service");
 const socket_io_1 = require("socket.io");
-const SetPlayer_dto_1 = require("./dto/SetPlayer.dto");
-const game_entity_1 = require("./entities/game.entity");
 let GameGateway = class GameGateway {
     constructor(gameService) {
         this.gameService = gameService;
     }
-    setInitPlayer(setPlayerDto, client) {
-        const resp = this.gameService.setPlayer(setPlayerDto, client.id);
-        client.join(setPlayerDto.matchId.toString());
-        if (resp.status === 'first player') {
-            return 'first player';
-        }
-        else {
-            this.server.to(resp.match.id.toString()).emit('JoinMatch', resp.match);
-            return resp.match;
+    afterInit() {
+        console.log('Websocket Server Started,Listening on Port:3000');
+    }
+    handleConnection(client) {
+        console.log(`Client connected: ${client.id}`, " length: ", this.server.engine.clientsCount, "  server:   ", Object.keys(this.server.sockets).length);
+    }
+    handleDisconnect(client) {
+        console.log(`Client disconnected: ${client.id}`);
+        const roomName = this.gameService.clientRooms[client.id];
+        if (roomName) {
+            this.gameService.gameActive = false;
+            if (client.id === this.gameService.state[roomName].playerOne.id)
+                this.gameService.playerDisconnected = 1;
+            else if (client.id === this.gameService.state[roomName].playerTwo.id)
+                this.gameService.playerDisconnected = 2;
         }
     }
-    updateGame(id) {
-        return this.gameService.update(id);
+    handleKeyDown(keyCode, client) {
+        const ret = this.gameService.handleKeyDown(keyCode);
+        this.gameService.updatePlayer(client, this.gameService.state, ret);
     }
-    updateplayers(match) {
-        this.gameService.updateMovement(match);
+    handleNewGame(client, name) {
+        this.gameService.handleNewGame(client, name);
+    }
+    handleJoinGame(data, client) {
+        this.gameService.handleJoinGame(this.server, client, data.gameCode, data.name);
+    }
+    handleSpectateGame(gameCode, client) {
+        this.gameService.handleSpectateGame(this.server, client, gameCode);
     }
 };
 __decorate([
@@ -45,28 +56,37 @@ __decorate([
     __metadata("design:type", socket_io_1.Server)
 ], GameGateway.prototype, "server", void 0);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('createGame'),
+    (0, websockets_1.SubscribeMessage)('keyDown'),
     __param(0, (0, websockets_1.MessageBody)()),
     __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [SetPlayer_dto_1.SetPlayerDto,
-        socket_io_1.Socket]),
+    __metadata("design:paramtypes", [Number, socket_io_1.Socket]),
     __metadata("design:returntype", void 0)
-], GameGateway.prototype, "setInitPlayer", null);
+], GameGateway.prototype, "handleKeyDown", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('updateGame'),
-    __param(0, (0, websockets_1.MessageBody)()),
+    (0, websockets_1.SubscribeMessage)('newGame'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
+    __metadata("design:paramtypes", [socket_io_1.Socket, String]),
     __metadata("design:returntype", void 0)
-], GameGateway.prototype, "updateGame", null);
+], GameGateway.prototype, "handleNewGame", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('updateplayers'),
+    (0, websockets_1.SubscribeMessage)('joinGame'),
     __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [game_entity_1.Match]),
+    __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
     __metadata("design:returntype", void 0)
-], GameGateway.prototype, "updateplayers", null);
+], GameGateway.prototype, "handleJoinGame", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('spectateGame'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, socket_io_1.Socket]),
+    __metadata("design:returntype", void 0)
+], GameGateway.prototype, "handleSpectateGame", null);
 GameGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {

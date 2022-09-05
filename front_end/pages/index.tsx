@@ -3,7 +3,7 @@ import styles from '../styles/Home.module.css'
 import { useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client'
 
-const socket = io('http://localhost:3001/')
+const socket = io('http://localhost:8080')
 
 const Home: NextPage = () => {
   const canvasRef = useRef(null);
@@ -296,7 +296,9 @@ const Home: NextPage = () => {
         </div>
           : <div id='gameScreen'>
             <h1>{namePlayer} your game code is: <span id='gameCodeDisplay'>{gameCodeDisplay}</span> </h1>
-            <div style={{ display: "flex", justifyContent: "center" }} ><canvas ref={canvasRef} style={{ border: "1px solid #c3c3c3" }}></canvas></div>
+            <div style={{ display: "flex", justifyContent: "center" }} >
+              <canvas ref={canvasRef} style={{ border: "1px solid #c3c3c3" }}></canvas>
+            </div>
           </div>}
       </div>
     </div>

@@ -14,7 +14,7 @@ let GameModule = class GameModule {
 };
 GameModule = __decorate([
     (0, common_1.Module)({
-        providers: [game_gateway_1.GameGateway, game_service_1.GameService]
+        providers: [game_gateway_1.GameGateway, game_service_1.GameService],
     })
 ], GameModule);
 exports.GameModule = GameModule;
