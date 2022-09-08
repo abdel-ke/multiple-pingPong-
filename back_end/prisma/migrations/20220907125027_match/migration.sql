@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Match" ALTER COLUMN "player_one" SET DATA TYPE TEXT,
+ALTER COLUMN "player_two" SET DATA TYPE TEXT;
