@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Match = void 0;
-class Match {
+exports.Game = void 0;
+class Game {
 }
-exports.Match = Match;
+exports.Game = Game;
 //# sourceMappingURL=game.entity.js.map

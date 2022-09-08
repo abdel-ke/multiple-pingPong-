@@ -16,7 +16,6 @@ exports.GameGateway = void 0;
 const websockets_1 = require("@nestjs/websockets");
 const game_service_1 = require("./game.service");
 const socket_io_1 = require("socket.io");
-const prisma_service_1 = require("../prisma.service");
 let GameGateway = class GameGateway {
     constructor(gameService) {
         this.gameService = gameService;

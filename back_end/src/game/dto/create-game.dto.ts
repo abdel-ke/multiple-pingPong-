@@ -1,5 +1,5 @@
 
-export class CreateGameTwoDto {
+export class CreateGameDto {
     player_one: number;
     player_two: number;
     player_one_score: number;

@@ -1,4 +1,4 @@
-export declare class CreateGameTwoDto {
+export declare class CreateGameDto {
     player_one: number;
     player_two: number;
     player_one_score: number;

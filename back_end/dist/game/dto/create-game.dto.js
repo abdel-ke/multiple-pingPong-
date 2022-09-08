@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateGameTwoDto = void 0;
-class CreateGameTwoDto {
+exports.CreateGameDto = void 0;
+class CreateGameDto {
 }
-exports.CreateGameTwoDto = CreateGameTwoDto;
+exports.CreateGameDto = CreateGameDto;
 //# sourceMappingURL=create-game.dto.js.map

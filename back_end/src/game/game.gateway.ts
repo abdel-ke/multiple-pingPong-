@@ -1,8 +1,6 @@
 import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket } from '@nestjs/websockets';
 import { GameService } from './game.service';
 import { Server, Socket } from 'socket.io';
-import { PrismaService } from 'src/prisma.service';
-import { prisma } from '@prisma/client';
 
 @WebSocketGateway({
   cors: {

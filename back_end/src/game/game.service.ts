@@ -2,8 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { FRAMERATE } from './constants';
 import { PrismaClient } from '@prisma/client'
-import { async } from 'rxjs';
-import { stat } from 'fs';
 
 @Injectable()
 export class GameService {
