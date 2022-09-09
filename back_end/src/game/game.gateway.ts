@@ -13,18 +13,11 @@ export class GameGateway {
   constructor(private readonly gameService: GameService) { }
 
   afterInit() {
-    console.log('Websocket Server Started,Listening on Port:3000');
+    console.log('Websocket Server Started,Listening on Port:8080');
   }
 
   handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`, " length: ", this.server.engine.clientsCount, "  server:   ", Object.keys(this.server.sockets).length);
-    // this.gameService.state = this.gameService.createGameState();
-    // client.on('keyDown', keyCode => {
-    //   const ret = this.gameService.handleKeyDown(keyCode);
-    //   this.gameService.updatePlayer(client, state, ret);
-    // });
-    // client.on('newGame', this.gameService.handleNewGame);
-    // this.gameService.startGameInterval(client, state);
+    console.log(`Client connected: ${client.id}`, " length: ", this.server.engine.clientsCount);
   }
 
   handleDisconnect(client: Socket) {
@@ -63,8 +56,4 @@ export class GameGateway {
     this.gameService.handleSpectateGame(this.server, client, gameCode);
   }
 
-  // @SubscribeMessage('canvaSize')
-  // handleCanvaSize(@MessageBody() data: any) {
-  //   this.gameService.handleCanvaSize(data.width, data.height)
-  // }
 }

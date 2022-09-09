@@ -21,10 +21,10 @@ let GameGateway = class GameGateway {
         this.gameService = gameService;
     }
     afterInit() {
-        console.log('Websocket Server Started,Listening on Port:3000');
+        console.log('Websocket Server Started,Listening on Port:8080');
     }
     handleConnection(client) {
-        console.log(`Client connected: ${client.id}`, " length: ", this.server.engine.clientsCount, "  server:   ", Object.keys(this.server.sockets).length);
+        console.log(`Client connected: ${client.id}`, " length: ", this.server.engine.clientsCount);
     }
     handleDisconnect(client) {
         console.log(`Client disconnected: ${client.id}`);
@@ -49,6 +49,9 @@ let GameGateway = class GameGateway {
     }
     handleSpectateGame(gameCode, client) {
         this.gameService.handleSpectateGame(this.server, client, gameCode);
+    }
+    handleTestGame(client) {
+        this.gameService.handleTestteGame(this.server, client);
     }
 };
 __decorate([
@@ -87,6 +90,13 @@ __decorate([
     __metadata("design:paramtypes", [String, socket_io_1.Socket]),
     __metadata("design:returntype", void 0)
 ], GameGateway.prototype, "handleSpectateGame", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('testGame'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket]),
+    __metadata("design:returntype", void 0)
+], GameGateway.prototype, "handleTestGame", null);
 GameGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {
