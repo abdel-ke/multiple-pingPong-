@@ -23,7 +23,6 @@ let GameService = class GameService {
         this.canvasWidth = 600;
         this.canvasHeight = this.canvasWidth / 2;
         this.playerDisconnected = 0;
-        this.cp = 0;
     }
     createGameState() {
         return {
@@ -253,10 +252,6 @@ let GameService = class GameService {
             const state = this.state[gameCode];
             server.emit("spectateState", JSON.stringify(state));
         }, 1000 / constants_1.FRAMERATE);
-    }
-    handleTestteGame(server, client) {
-        this.clientRooms[++this.cp] = client.id;
-        console.log(this.clientRooms);
     }
     emitGameState(server, gameState, roomName) {
         server.sockets.in(roomName).emit("gameState", JSON.stringify(gameState));

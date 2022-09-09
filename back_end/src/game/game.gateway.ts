@@ -55,5 +55,4 @@ export class GameGateway {
   handleSpectateGame(@MessageBody() gameCode: string, @ConnectedSocket() client: Socket) {
     this.gameService.handleSpectateGame(this.server, client, gameCode);
   }
-
 }

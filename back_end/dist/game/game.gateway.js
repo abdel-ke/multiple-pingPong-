@@ -50,9 +50,6 @@ let GameGateway = class GameGateway {
     handleSpectateGame(gameCode, client) {
         this.gameService.handleSpectateGame(this.server, client, gameCode);
     }
-    handleTestGame(client) {
-        this.gameService.handleTestteGame(this.server, client);
-    }
 };
 __decorate([
     (0, websockets_1.WebSocketServer)(),
@@ -90,13 +87,6 @@ __decorate([
     __metadata("design:paramtypes", [String, socket_io_1.Socket]),
     __metadata("design:returntype", void 0)
 ], GameGateway.prototype, "handleSpectateGame", null);
-__decorate([
-    (0, websockets_1.SubscribeMessage)('testGame'),
-    __param(0, (0, websockets_1.ConnectedSocket)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [socket_io_1.Socket]),
-    __metadata("design:returntype", void 0)
-], GameGateway.prototype, "handleTestGame", null);
 GameGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {
