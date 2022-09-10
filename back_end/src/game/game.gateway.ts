@@ -26,9 +26,9 @@ export class GameGateway {
     if (this.gameService.state[roomName]) {
       this.gameService.gameActive = false;
       if (client.id === this.gameService.state[roomName].playerOne.id)
-        this.gameService.playerDisconnected = 1;
+        this.gameService.playerDisconnected[roomName] = 1;
       else if (client.id === this.gameService.state[roomName].playerTwo.id)
-        this.gameService.playerDisconnected = 2;
+        this.gameService.playerDisconnected[roomName] = 2;
     }
   }
 

@@ -6,10 +6,10 @@ export declare class GameService {
     state: any;
     clientRooms: any;
     clientSpectating: any;
-    gameActive: boolean;
+    gameActive: any;
     canvasWidth: number;
     canvasHeight: number;
-    playerDisconnected: number;
+    playerDisconnected: any;
     createGameState(): {
         playerOne: {
             id: string;

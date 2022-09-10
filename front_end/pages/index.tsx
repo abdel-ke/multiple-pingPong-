@@ -196,18 +196,18 @@ const Home: NextPage = () => {
     if (data === playerNamber) {
       alert('You Win!');
       // console.log('You Win!');
-    } else {
+    }
+    if (data !== playerNamber) {
       alert('You Lose :(');
       // console.log('You Lose :(');
     }
   }
-
   socket.off('gameOver').on('gameOver', handleGameOver);
 
   const handlePlayerDisconnected = (player: number) => {
     if (player !== playerNamber) {
       alert('Your opponent disconnected. You win!');
-      console.log('Your opponent disconnected. You win!');
+      // console.log('Your opponent disconnected. You win!');
     }
   }
   socket.off('playerDisconnected').on('playerDisconnected', handlePlayerDisconnected);

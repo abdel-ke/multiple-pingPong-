@@ -19,10 +19,10 @@ let GameService = class GameService {
         this.state = {};
         this.clientRooms = {};
         this.clientSpectating = {};
-        this.gameActive = false;
+        this.gameActive = {};
         this.canvasWidth = 600;
         this.canvasHeight = this.canvasWidth / 2;
-        this.playerDisconnected = 0;
+        this.playerDisconnected = {};
     }
     createGameState() {
         return {
@@ -108,9 +108,9 @@ let GameService = class GameService {
             ball.velocityY = ball.speed * Math.sin(angleRad);
             ball.speed += 0.1;
         }
-        if (playerOne.score == 5)
+        if (playerOne.score == 3)
             return 1;
-        if (playerTwo.score == 5)
+        if (playerTwo.score == 3)
             return 2;
         return false;
     }
@@ -132,7 +132,7 @@ let GameService = class GameService {
     }
     updatePlayer(client, state, ret) {
         const roomName = this.clientRooms[client.id];
-        if (!roomName || !this.gameActive)
+        if (!roomName || !this.gameActive[roomName])
             return;
         if (this.state[roomName].playerOne.id === client.id)
             this.updatePlayerOne(state[roomName], ret);
@@ -171,15 +171,14 @@ let GameService = class GameService {
         const interval = setInterval(async () => {
             const winner = this.gameloop(state[roomName]);
             const stateRoom = state[roomName];
-            if (this.gameActive) {
+            if (this.gameActive[roomName]) {
                 if (!winner) {
                     this.emitGameState(server, stateRoom, roomName);
                 }
                 else {
                     this.emitGameOver(server, roomName, winner);
-                    console.log("GameOver: ", stateRoom);
                     clearInterval(interval);
-                    this.gameActive = false;
+                    this.gameActive[roomName] = 0;
                     await this.prisma.match.create({
                         data: {
                             player_one: stateRoom.playerOne.id,
@@ -191,10 +190,9 @@ let GameService = class GameService {
                 }
             }
             else {
-                console.log(`player ${this.playerDisconnected} was disconnected`);
-                this.emitPlayerDesconnected(server, roomName, this.playerDisconnected);
+                console.log(`player[] ${this.playerDisconnected[roomName]} was disconnected`);
+                this.emitPlayerDesconnected(server, roomName, this.playerDisconnected[roomName]);
                 clearInterval(interval);
-                console.log("disconnect: ", state[roomName]);
                 await this.prisma.match.create({
                     data: {
                         player_one: stateRoom.playerOne.id,
@@ -220,7 +218,7 @@ let GameService = class GameService {
         let room;
         if (!gameCode)
             return;
-        this.gameActive = true;
+        this.gameActive[gameCode] = 1;
         server.sockets.adapter.rooms.get(gameCode).forEach((value) => room = value);
         let allUsers;
         if (room) {
@@ -257,6 +255,7 @@ let GameService = class GameService {
         server.sockets.in(roomName).emit("gameState", JSON.stringify(gameState));
     }
     emitGameOver(server, roomName, winner) {
+        console.log("roomName: ", roomName);
         server.in(roomName).emit('gameOver', JSON.stringify(winner));
     }
     emitPlayerDesconnected(server, roomName, winner) {
