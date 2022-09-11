@@ -2,7 +2,7 @@ import type { NextPage } from 'next'
 import { useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client'
 
-const socket = io('http://localhost:8080')
+const socket = io('http://localhost:8080');
 
 const Home: NextPage = () => {
   const canvasRef = useRef(null);
@@ -62,18 +62,22 @@ const Home: NextPage = () => {
     }
   }, [!initialScreen]);
 
-  const newGame = () => {
+  /* const newGame = () => {
     setPlayerNamber(1);
     socket.emit('newGame', namePlayer);
     init(1);
   }
-
-  const joinGame = () => {
-    setPlayerNamber(2);
-    socket.emit('joinGame', { gameCode: gameCodeInput.toString(), name: namePlayer });
-    init(2);
+ */
+  const playGame = () => {
+    socket.emit('playGame');
   }
-
+  /* 
+    const joinGame = () => {
+      setPlayerNamber(2);
+      socket.emit('joinGame', { gameCode: gameCodeInput.toString(), name: namePlayer });
+      init(2);
+    }
+     */
   const spectateGame = () => {
     setinitialScreen(true);
     socket.emit('spectateGame', gameCodeInput.toString());
@@ -165,8 +169,19 @@ const Home: NextPage = () => {
     drawText(ctx, pTwo.score.toString(), ((600 / 4) * 3) / percentage, (300 / 5) / percentage, "white", percentage);
   }
 
-  const handlInit = (number: number) => {
+  const dots = (x: number, y: number) => {
+    if (ctx) {
+      let percentage = 600 / canvas.width;
+      ctx.fillStyle = "red";
+      ctx.font = `${45 / percentage}px fantasy`;
+      ctx.fillText(".", x, y);
+    }
+  }
+
+  const handlInit = async (number: number) => {
     setinitialScreen(true);
+    setPlayerNamber(number);
+    setGameActive(true);
   }
   socket.off('init').on('init', handlInit);
 
@@ -217,22 +232,42 @@ const Home: NextPage = () => {
   }
   socket.off('gameCode').on('gameCode', handleGameCode);
 
-  const handleUnknownGame = () => {
-    alert("Unknown Game code");
+  let x = 0;
+  const handleWaiting = () => {
+    drawText(ctx, ". ", (canvas.width / 2 - 12) + x, canvas.height / 2, "white", 600 / canvas.width);
+    x += 10;
+    if (x === 40) {
+      x = 0;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
   }
-  socket.off('unknownGame').on('unknownGame', handleUnknownGame);
+  socket.off('waiting').on('waiting', handleWaiting);
+  
+  let countDown = 3;
+  const handleStarting = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawText(ctx, countDown.toString(), canvas.width / 2, canvas.height / 2, "white", 600 / canvas.width);
+    countDown--;
+  }
+  socket.off('start').on('start', handleStarting);
 
-  const handletooManyPlayers = () => {
-    // reset();
-    alert("This Game is already in progress");
-  }
-  socket.off('tooManyPlayers').on('tooManyPlayers', handletooManyPlayers);
-
-  const reset = () => {
-    setGameCodeInput('');
-    setGameCodeDisplay('');
-    setinitialScreen(false);
-  }
+  /* 
+    const handleUnknownGame = () => {
+      alert("Unknown Game code");
+    }
+    socket.off('unknownGame').on('unknownGame', handleUnknownGame);
+  
+    const handletooManyPlayers = () => {
+      // reset();
+      alert("This Game is already in progress");
+    }
+    socket.off('tooManyPlayers').on('tooManyPlayers', handletooManyPlayers);
+    const reset = () => {
+      setGameCodeInput('');
+      setGameCodeDisplay('');
+      setinitialScreen(false);
+    }
+  */
 
   return (
     <div>
@@ -240,14 +275,15 @@ const Home: NextPage = () => {
         {!initialScreen ? <div id='initialScreen'>
           <input type="text" placeholder='Write your name' id='name' onChange={(e) => { setNamePlayer(e.target.value) }} />
           <input type="text" placeholder='Write the code' id='code' onChange={(e) => { setGameCodeInput(e.target.value) }} />
-          <button type='submit' onClick={joinGame}>join Game</button>
-          <button type='submit' onClick={newGame}>new Game</button>
+          {/* <button type='submit' onClick={joinGame}>join Game</button>
+          <button type='submit' onClick={newGame}>new Game</button> */}
           <button type='submit' onClick={spectateGame}>spectating a game</button>
+          <button type='submit' onClick={playGame}>Play</button>
         </div>
           : <div id='gameScreen'>
             <h1>{namePlayer} your game code is: <span id='gameCodeDisplay'>{gameCodeDisplay}</span> </h1>
             <div style={{ display: "flex", justifyContent: "center" }} >
-              <canvas ref={canvasRef} style={{ border: "1px solid #c3c3c3" }}></canvas>
+              <canvas ref={canvasRef} style={{ border: "1px solid #c3c3c3", backgroundColor: "black" }}></canvas>
             </div>
           </div>}
       </div>

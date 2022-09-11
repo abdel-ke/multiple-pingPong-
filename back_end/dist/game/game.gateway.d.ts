@@ -11,4 +11,5 @@ export declare class GameGateway {
     handleNewGame(client: Socket, name: string): void;
     handleJoinGame(data: any, client: Socket): void;
     handleSpectateGame(gameCode: string, client: Socket): void;
+    handlePlayGame(client: Socket): void;
 }

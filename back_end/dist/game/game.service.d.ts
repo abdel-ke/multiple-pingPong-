@@ -49,9 +49,14 @@ export declare class GameService {
     updatePlayer(client: Socket, state: any, ret: number): void;
     updatePlayerOne(state: any, ret: number): void;
     updatePlayerTwo(state: any, ret: number): void;
-    startGameInterval(server: Server, state: any, roomName: string): void;
+    starting: (server: Server, state: any, roomName: string) => void;
+    startGameInterval: (server: Server, state: any, roomName: string) => void;
     handleNewGame(client: Socket, name: string): void;
     handleJoinGame(server: Server, client: Socket, gameCode: string, name: string): void;
+    roomName: number;
+    cp: number;
+    wait: boolean;
+    handlePlayGame(server: Server, client: Socket): void;
     handleSpectateGame(server: Server, client: Socket, gameCode: string): void;
     emitGameState(server: Server, gameState: any, roomName: string): void;
     emitGameOver(server: Server, roomName: string, winner: any): void;

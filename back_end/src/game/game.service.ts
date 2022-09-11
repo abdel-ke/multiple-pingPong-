@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { FRAMERATE } from './constants';
 import { PrismaClient } from '@prisma/client'
-import { SecureVersion } from 'tls';
+import { async, delay } from 'rxjs';
 
 @Injectable()
 export class GameService {
@@ -127,9 +127,9 @@ export class GameService {
             ball.speed += 0.1;
             // update the score;
         }
-        if (playerOne.score == 3)
+        if (playerOne.score == 2)
             return 1;
-        if (playerTwo.score == 3)
+        if (playerTwo.score == 2)
             return 2;
         return false;
     }
@@ -186,7 +186,19 @@ export class GameService {
         }
     }
 
-    startGameInterval(server: Server, state: any, roomName: string) {
+    starting = (server: Server, state: any, roomName: string) => {
+        let count = 3;
+        const int = setInterval(() => {
+            server.in(roomName).emit('start');
+            count--;
+            if (count === 0) {
+                clearInterval(int);
+                this.startGameInterval(server, state, roomName);
+            }
+        }, 1500);
+    }
+
+    startGameInterval = (server: Server, state: any, roomName: string) => {
         // playerOne win return 1 && playerTwo win return 2
         const interval = setInterval(async () => {
             const winner = this.gameloop(state[roomName]);
@@ -197,10 +209,10 @@ export class GameService {
                     this.emitGameState(server, stateRoom, roomName);
                 }
                 else {
-                    this.emitGameOver(server, roomName, winner);
                     // console.log("GameOver: ", stateRoom);
                     clearInterval(interval);
-                    this.gameActive[roomName] = 0;
+                    this.gameActive[roomName] = false;
+                    this.emitGameOver(server, roomName, winner);
                     await this.prisma.match.create({
                         data: {
                             player_one: stateRoom.playerOne.id,
@@ -232,6 +244,7 @@ export class GameService {
     handleNewGame(client: Socket, name: string) {
         let roomName = Math.floor(Math.random() * 1000000);
         this.clientRooms[client.id] = roomName;
+        this.roomName = roomName;
         client.emit('gameCode', roomName);
 
         this.state[roomName] = this.createGameState();
@@ -246,7 +259,7 @@ export class GameService {
         let room: string;
         if (!gameCode)
             return;
-        this.gameActive[gameCode] = 1;
+        this.gameActive[gameCode] = true;
         server.sockets.adapter.rooms.get(gameCode).forEach((value) => room = value)
         let allUsers;
         if (room) {
@@ -257,7 +270,7 @@ export class GameService {
         if (allUsers) {
             // numClients = Object.keys(allUsers).length;
             numClients = server.engine.clientsCount;
-            console.log("length: ", numClients);
+            // console.log("length: ", numClients);
         }
 
         if (numClients === 0) {
@@ -275,7 +288,31 @@ export class GameService {
         this.state[gameCode].playerTwo.id = client.id;
         this.state[gameCode].playerTwo.name = name;
         client.emit('init', 2);
-        this.startGameInterval(server, this.state, gameCode);
+        this.starting(server, this.state, gameCode);
+    }
+
+    roomName: number;
+    cp: number = 1;
+    wait = false;
+    handlePlayGame(server: Server, client: Socket) {
+        if (this.cp % 2 != 0) {
+            this.handleNewGame(client, "");
+            console.log("First => cp: ", this.cp, " toomName: ", this.roomName);
+            this.cp++;
+            this.wait = true;
+            const interval = setInterval(() => {
+                server.in(this.roomName.toString()).emit('waiting');
+                if (!this.wait)
+                    clearInterval(interval);
+            }, 500);
+        }
+        else {
+            console.log("second => cp: ", this.cp, " roomName: ", this.roomName);
+            this.handleJoinGame(server, client, this.roomName.toString(), "");
+            // console.log("gameActive", this.gameActive);
+            this.cp++;
+            this.wait = false
+        }
     }
 
     handleSpectateGame(server: Server, client: Socket, gameCode: string) {
@@ -296,11 +333,12 @@ export class GameService {
     }
 
     emitGameOver(server: Server, roomName: string, winner: any) {
-        console.log("roomName: ", roomName);
+        console.log("Over gameActive", this.gameActive);
         server.in(roomName).emit('gameOver', JSON.stringify(winner));
     }
 
     emitPlayerDesconnected(server: Server, roomName: string, winner: number) {
         server.in(roomName).emit('playerDisconnected', JSON.stringify(winner));
     }
+
 }

@@ -30,7 +30,7 @@ let GameGateway = class GameGateway {
         console.log(`Client disconnected: ${client.id}`);
         const roomName = this.gameService.clientRooms[client.id];
         if (this.gameService.state[roomName]) {
-            this.gameService.gameActive = false;
+            this.gameService.gameActive[this.gameService.roomName] = false;
             if (client.id === this.gameService.state[roomName].playerOne.id)
                 this.gameService.playerDisconnected[roomName] = 1;
             else if (client.id === this.gameService.state[roomName].playerTwo.id)
@@ -49,6 +49,9 @@ let GameGateway = class GameGateway {
     }
     handleSpectateGame(gameCode, client) {
         this.gameService.handleSpectateGame(this.server, client, gameCode);
+    }
+    handlePlayGame(client) {
+        this.gameService.handlePlayGame(this.server, client);
     }
 };
 __decorate([
@@ -87,6 +90,13 @@ __decorate([
     __metadata("design:paramtypes", [String, socket_io_1.Socket]),
     __metadata("design:returntype", void 0)
 ], GameGateway.prototype, "handleSpectateGame", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('playGame'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket]),
+    __metadata("design:returntype", void 0)
+], GameGateway.prototype, "handlePlayGame", null);
 GameGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {

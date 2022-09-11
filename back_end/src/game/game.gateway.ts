@@ -24,7 +24,7 @@ export class GameGateway {
     console.log(`Client disconnected: ${client.id}`);
     const roomName = this.gameService.clientRooms[client.id];
     if (this.gameService.state[roomName]) {
-      this.gameService.gameActive = false;
+      this.gameService.gameActive[this.gameService.roomName] = false;
       if (client.id === this.gameService.state[roomName].playerOne.id)
         this.gameService.playerDisconnected[roomName] = 1;
       else if (client.id === this.gameService.state[roomName].playerTwo.id)
@@ -54,5 +54,10 @@ export class GameGateway {
   @SubscribeMessage('spectateGame')
   handleSpectateGame(@MessageBody() gameCode: string, @ConnectedSocket() client: Socket) {
     this.gameService.handleSpectateGame(this.server, client, gameCode);
+  }
+
+  @SubscribeMessage('playGame')
+  handlePlayGame(@ConnectedSocket() client: Socket) {
+    this.gameService.handlePlayGame(this.server, client);
   }
 }
